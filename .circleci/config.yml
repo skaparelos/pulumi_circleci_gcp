@@ -15,7 +15,7 @@ jobs:
           command: |
             pulumi login --non-interactive $PULUMI_ACCESS_TOKEN
             pulumi stack select $PULUMI_STACK_NAME
-            pulumi up --yes
+            pulumi up --yes --debug
 
 workflows:
   version: 2
