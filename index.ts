@@ -18,7 +18,7 @@ const registryRepository = new gcp.artifactregistry.Repository(
     dockerConfig: {
       immutableTags: true,
     },
-    description: 'Docker repository',
+    description: 'Docker repository 2',
     format: 'DOCKER',
     repositoryId: customRuntimeRepositoryName,
   },
