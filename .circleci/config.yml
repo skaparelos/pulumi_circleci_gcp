@@ -19,7 +19,8 @@ jobs:
             cat /tmp/gcp-service-account-key.json
             pulumi login --non-interactive
             pulumi stack select $PULUMI_STACK_NAME
-            pulumi up --yes --debug
+            echo "ok"
+            # pulumi up --yes --debug
 
 workflows:
   version: 2
