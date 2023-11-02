@@ -1,6 +1,6 @@
 import * as gcp from '@pulumi/gcp'
 
-const prefix = 'test'
+const prefix = 'test2'
 
 // -------------------------------------- //
 // Deploy a custom container to Cloud Run //
