@@ -19,6 +19,7 @@ jobs:
             cat $GOOGLE_APPLICATION_CREDENTIALS
             pulumi login --non-interactive
             pulumi stack select $PULUMI_STACK_NAME
+            pulumi config set --secret gcp:credentials < $GOOGLE_APPLICATION_CREDENTIALS
             echo "ok"
             pulumi up --yes --debug
 
