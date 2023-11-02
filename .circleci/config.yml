@@ -13,6 +13,8 @@ jobs:
       - run:
           name: Deploy to GCP
           command: |
+            echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
             pulumi login --non-interactive
             pulumi stack select $PULUMI_STACK_NAME
             pulumi up --yes --debug
