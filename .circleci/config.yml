@@ -15,12 +15,12 @@ jobs:
           command: |
             echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
-            echo "cat /tmp/gcp-service-account-key.json"
-            cat /tmp/gcp-service-account-key.json
+            echo "cat GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS"
+            cat $GOOGLE_APPLICATION_CREDENTIALS
             pulumi login --non-interactive
             pulumi stack select $PULUMI_STACK_NAME
             echo "ok"
-            # pulumi up --yes --debug
+            pulumi up --yes --debug
 
 workflows:
   version: 2
