@@ -3,7 +3,13 @@ import * as docker from "@pulumi/docker";
 import * as gcp from "@pulumi/gcp";
 
 // Get the GCP project config
-const gcpConfig = pulumi.output(gcp.config.project);
+const projectId = 'deleteme-403817'
+const prefix = 'peacock-render-faas'
+const customRuntimeEnvironmentRegistry = `${prefix}-artifact-registry`
+const customRuntimeEnvironmentName = `${prefix}-image`
+const customRuntimeRepositoryName = `${prefix}-repository`
+const currentImageVersion = 'v0.0.1' //this needs to be incremented on each deployment currently
+
 
 // Create a Google Artifact Registry repository to store Docker images
 const repository = new gcp.artifactregistry.Repository("app-repository", {
@@ -13,11 +19,15 @@ const repository = new gcp.artifactregistry.Repository("app-repository", {
 });
 
 // Get registry info (creds and endpoint).
-const imageName = pulumi.interpolate`${repository.location}-docker.pkg.dev/${gcpConfig}/app-repository/myapp`;
+
+const renderFaasDockerImageName = repository.name.apply(
+    (name) =>
+      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:${currentImageVersion}`,
+  )
 
 // Build and publish the app image.
 const image = new docker.Image("node-app-image", {
-    imageName: imageName,
+    imageName: renderFaasDockerImageName,
     build: {
         context: "./",  // assuming Dockerfile and app source are in the same directory
     },
