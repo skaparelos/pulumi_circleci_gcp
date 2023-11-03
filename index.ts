@@ -36,4 +36,4 @@ const service = new gcp.cloudrun.Service("app-service", {
 });
 
 // Export the URL of the deployed service
-export const url = service.status.url;
+export const url = service.statuses[0].url;
