@@ -13,9 +13,8 @@ const customRuntimeRepositoryName = `${prefix}-repository`
 
 // Create a Google Artifact Registry repository to store Docker images
 const repository = new gcp.artifactregistry.Repository("my-repo", {
-    description: "example docker repository",
     location,
-    repositoryId: "my-repo-id",
+    repositoryId: customRuntimeRepositoryName,
     format: "DOCKER",
 });
 
