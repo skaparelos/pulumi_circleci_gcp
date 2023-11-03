@@ -27,6 +27,9 @@ const renderFaasDockerImageName = repository.name.apply(
       `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
   )
 
+console.log("renderFaasDockerImageName=")
+console.log(renderFaasDockerImageName)
+
 // Build and publish the app image.
 const image = new docker.Image(customRuntimeEnvironmentName, {
     imageName: renderFaasDockerImageName,
