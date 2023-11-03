@@ -27,7 +27,7 @@ const renderFaasDockerImageName = repository.name.apply(
   )
 
 // Build and publish the app image.
-const image = new docker.Image("node-app-image", {
+const image = new docker.Image(customRuntimeEnvironmentName, {
     imageName: renderFaasDockerImageName,
     build: {
         context: "./backend1/",  // assuming Dockerfile and app source are in the same directory
