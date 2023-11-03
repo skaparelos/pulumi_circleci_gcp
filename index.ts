@@ -12,7 +12,7 @@ const customRuntimeRepositoryName = `${prefix}-repository`
 
 
 // Create a Google Artifact Registry repository to store Docker images
-const repository = new gcp.artifactregistry.Repository("my-repo", {
+const repository = new gcp.artifactregistry.Repository(customRuntimeEnvironmentRegistry, {
     location,
     repositoryId: customRuntimeRepositoryName,
     format: "DOCKER",
@@ -23,10 +23,10 @@ const repository = new gcp.artifactregistry.Repository("my-repo", {
 // console.log(repository.name)
 
 // // Get registry info (creds and endpoint).
-const renderFaasDockerImageName = repository.name.apply(
-    (name) =>
-      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
-  )
+// const renderFaasDockerImageName = repository.name.apply(
+//     (name) =>
+//       `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
+//   )
 
 // console.log("renderFaasDockerImageName=")
 // console.log(renderFaasDockerImageName)
@@ -43,7 +43,7 @@ const demoImage = new docker.Image("demo-image", {
     build: {
         context: "./backend1/",
     },
-    imageName: renderFaasDockerImageName,
+    imageName: `${location}-docker.pkg.dev/${projectId}/${customRuntimeRepositoryName}/${customRuntimeEnvironmentName}`,
     // skipPush: true,
 });
 
