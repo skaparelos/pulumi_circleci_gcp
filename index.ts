@@ -18,9 +18,10 @@ const repository = new gcp.artifactregistry.Repository(customRuntimeEnvironmentR
     format: "DOCKER",
 });
 
+console.log("repository name=")
+console.log(repository.name)
 
 // Get registry info (creds and endpoint).
-
 const renderFaasDockerImageName = repository.name.apply(
     (name) =>
       `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
