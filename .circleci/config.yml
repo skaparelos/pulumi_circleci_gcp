@@ -6,6 +6,8 @@ jobs:
       - image: pulumi/pulumi:latest
     steps:
       - checkout
+      - setup_remote_docker:  # Add this step to setup remote Docker environment
+          docker_layer_caching: true  # Optional, enables layer caching
       - run:
           name: Install Dependencies
           command: |
