@@ -27,6 +27,7 @@ jobs:
             pulumi stack select $PULUMI_STACK_NAME
             pulumi config set --secret gcp:credentials < $GOOGLE_APPLICATION_CREDENTIALS
             echo "ok"
+            cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key_base64 --password-stdin https://us-central1-docker.pkg.dev
             pulumi up --yes --debug
 
 workflows:
