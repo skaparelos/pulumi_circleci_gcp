@@ -18,24 +18,37 @@ const repository = new gcp.artifactregistry.Repository(customRuntimeEnvironmentR
     format: "DOCKER",
 });
 
-console.log("repository name=")
-console.log(repository.name)
 
-// Get registry info (creds and endpoint).
-const renderFaasDockerImageName = repository.name.apply(
-    (name) =>
-      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
-  )
+// console.log("repository name=")
+// console.log(repository.name)
 
-console.log("renderFaasDockerImageName=")
-console.log(renderFaasDockerImageName)
+// // Get registry info (creds and endpoint).
+// const renderFaasDockerImageName = repository.name.apply(
+//     (name) =>
+//       `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
+//   )
+
+// console.log("renderFaasDockerImageName=")
+// console.log(renderFaasDockerImageName)
 
 // Build and publish the app image.
-const image = new docker.Image(customRuntimeEnvironmentName, {
-    imageName: renderFaasDockerImageName,
+// const image = new docker.Image(customRuntimeEnvironmentName, {
+//     imageName: renderFaasDockerImageName,
+//     build: {
+//         context: "./backend1/",  // assuming Dockerfile and app source are in the same directory
+//     },
+// });
+
+const demoImage = new docker.Image("demo-image", {
     build: {
-        context: "./backend1/",  // assuming Dockerfile and app source are in the same directory
+        args: {
+            platform: "linux/amd64",
+        },
+        context: "./backend1/",
+        dockerfile: "Dockerfile",
     },
+    imageName: "username/image:tag1",
+    // skipPush: true,
 });
 
 // Create a Cloud Run service that uses the Docker image
