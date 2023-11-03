@@ -41,13 +41,9 @@ const repository = new gcp.artifactregistry.Repository(customRuntimeEnvironmentR
 
 const demoImage = new docker.Image("demo-image", {
     build: {
-        args: {
-            platform: "linux/amd64",
-        },
         context: "./backend1/",
-        dockerfile: "Dockerfile",
     },
-    imageName: "username/image:tag1",
+    imageName: `${location}-docker.pkg.dev/${projectId}/${customRuntimeRepositoryName}/${customRuntimeEnvironmentName}:latest`,
     // skipPush: true,
 });
 
