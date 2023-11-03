@@ -4,6 +4,7 @@ import * as gcp from "@pulumi/gcp";
 
 // Get the GCP project config
 const projectId = 'deleteme-403817'
+const location = 'us-central1'
 const prefix = 'peacock-render-faas'
 const customRuntimeEnvironmentRegistry = `${prefix}-artifact-registry`
 const customRuntimeEnvironmentName = `${prefix}-image`
@@ -13,7 +14,7 @@ const currentImageVersion = 'v0.0.1' //this needs to be incremented on each depl
 
 // Create a Google Artifact Registry repository to store Docker images
 const repository = new gcp.artifactregistry.Repository("app-repository", {
-    location: "us-central1",
+    location,
     repositoryId: "app-repository",
     format: "DOCKER",
 });
