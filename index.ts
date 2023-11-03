@@ -30,7 +30,7 @@ const renderFaasDockerImageName = repository.name.apply(
 const image = new docker.Image("node-app-image", {
     imageName: renderFaasDockerImageName,
     build: {
-        context: "./",  // assuming Dockerfile and app source are in the same directory
+        context: "./backend1/",  // assuming Dockerfile and app source are in the same directory
     },
 });
 
