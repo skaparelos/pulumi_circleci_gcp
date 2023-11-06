@@ -45,7 +45,7 @@ const renderFaasDockerImageName = repository.name.apply(
 //     },
 // });
 
-const demoImage = new docker.Image(customRuntimeEnvironmentName, {
+const image = new docker.Image(customRuntimeEnvironmentName, {
     build: {
         context: "./backend1/",
         platform: 'linux/amd64',
@@ -55,16 +55,16 @@ const demoImage = new docker.Image(customRuntimeEnvironmentName, {
 });
 
 // Create a Cloud Run service that uses the Docker image
-// const service = new gcp.cloudrun.Service("app-service", {
-//     location: "us-central1",
-//     template: {
-//         spec: {
-//             containers: [{
-//                 image: image.imageName,
-//             }],
-//         },
-//     },
-// });
+const service = new gcp.cloudrun.Service("app-service", {
+    location: "us-central1",
+    template: {
+        spec: {
+            containers: [{
+                image: image.imageName,
+            }],
+        },
+    },
+});
 
 // Export the URL of the deployed service
-// export const url = service.statuses[0].url;
+export const url = service.statuses[0].url;
