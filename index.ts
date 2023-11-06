@@ -12,7 +12,9 @@ const customRuntimeRepositoryName = `${prefix}-repository`
 
 const config = new pulumi.Config();
 const branchName = config.require('branch');
+const commitSHA = config.require('commitSHA');
 console.log("branch name=", branchName)
+console.log("commit sha=", commitSHA)
 
 // Create a Google Artifact Registry repository to store Docker images
 const repository = new gcp.artifactregistry.Repository(
@@ -31,7 +33,7 @@ const repository = new gcp.artifactregistry.Repository(
 // Get registry info (creds and endpoint).
 const renderFaasDockerImageName = repository.name.apply(
     (name) =>
-      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:${branchName}`,
+      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:${branchName}:${commitSHA}`,
   )
 
 const image = new docker.Image(customRuntimeEnvironmentName, {
