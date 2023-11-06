@@ -8,11 +8,6 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Check Docker Version
-          command: |
-            docker --version
-            docker version
-      - run:
           name: Install Dependencies
           command: |
             npm install
@@ -21,11 +16,10 @@ jobs:
           command: |
             echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
-            echo "cat GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS"
-            cat $GOOGLE_APPLICATION_CREDENTIALS
+
             pulumi login --non-interactive
             pulumi stack select $PULUMI_STACK_NAME
-            echo "ok"
+
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
             pulumi up --yes --debug
