@@ -10,6 +10,10 @@ const customRuntimeEnvironmentRegistry = `${prefix}-artifact-registry`
 const customRuntimeEnvironmentName = `${prefix}-image`
 const customRuntimeRepositoryName = `${prefix}-repository`
 
+const config = new pulumi.Config();
+const branchName = config.require('branch');
+console.log("branch name=", branchName)
+
 // Create a Google Artifact Registry repository to store Docker images
 const repository = new gcp.artifactregistry.Repository(
     customRuntimeEnvironmentRegistry,
