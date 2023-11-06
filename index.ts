@@ -12,21 +12,27 @@ const customRuntimeRepositoryName = `${prefix}-repository`
 
 
 // Create a Google Artifact Registry repository to store Docker images
-const repository = new gcp.artifactregistry.Repository(customRuntimeEnvironmentRegistry, {
-    location,
-    repositoryId: customRuntimeRepositoryName,
-    format: "DOCKER",
-});
-
+const repository = new gcp.artifactregistry.Repository(
+    customRuntimeEnvironmentRegistry,
+    {
+      dockerConfig: {
+        immutableTags: true,
+      },
+      description: 'Peacock Faas Apps docker repository',
+      format: 'DOCKER',
+      location,
+      repositoryId: customRuntimeRepositoryName,
+    },
+  )
 
 // console.log("repository name=")
 // console.log(repository.name)
 
 // // Get registry info (creds and endpoint).
-// const renderFaasDockerImageName = repository.name.apply(
-//     (name) =>
-//       `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
-//   )
+const renderFaasDockerImageName = repository.name.apply(
+    (name) =>
+      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
+  )
 
 // console.log("renderFaasDockerImageName=")
 // console.log(renderFaasDockerImageName)
@@ -39,13 +45,14 @@ const repository = new gcp.artifactregistry.Repository(customRuntimeEnvironmentR
 //     },
 // });
 
-const demoImage = new docker.Image("demo-image", {
-    build: {
-        context: "./backend1/",
-    },
-    imageName: `${location}-docker.pkg.dev/${projectId}/${customRuntimeRepositoryName}/${customRuntimeEnvironmentName}`,
-    // skipPush: true,
-});
+// const demoImage = new docker.Image(customRuntimeEnvironmentName, {
+//     build: {
+//         context: "./backend1/",
+//         platform: 'linux/amd64',
+//     },
+//     imageName: renderFaasDockerImageName,
+//     // skipPush: true,
+// });
 
 // Create a Cloud Run service that uses the Docker image
 // const service = new gcp.cloudrun.Service("app-service", {

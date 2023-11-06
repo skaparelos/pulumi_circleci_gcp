@@ -1,5 +1,3 @@
 config:
-  gcp:credentials:
-    secure: AAABANmIrGPSLdsLugRCN36POGNgub0YnCvYd6tZxBHuq0agTOATBHzZ1OZMWxOZ0qpJFw==
   gcp:project: deleteme-403817
   gcp:region: us-central1
