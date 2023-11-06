@@ -10,7 +10,6 @@ const customRuntimeEnvironmentRegistry = `${prefix}-artifact-registry`
 const customRuntimeEnvironmentName = `${prefix}-image`
 const customRuntimeRepositoryName = `${prefix}-repository`
 
-
 // Create a Google Artifact Registry repository to store Docker images
 const repository = new gcp.artifactregistry.Repository(
     customRuntimeEnvironmentRegistry,
@@ -25,25 +24,11 @@ const repository = new gcp.artifactregistry.Repository(
     },
   )
 
-// console.log("repository name=")
-// console.log(repository.name)
-
-// // Get registry info (creds and endpoint).
+// Get registry info (creds and endpoint).
 const renderFaasDockerImageName = repository.name.apply(
     (name) =>
       `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:latest`,
   )
-
-// console.log("renderFaasDockerImageName=")
-// console.log(renderFaasDockerImageName)
-
-// Build and publish the app image.
-// const image = new docker.Image(customRuntimeEnvironmentName, {
-//     imageName: renderFaasDockerImageName,
-//     build: {
-//         context: "./backend1/",  // assuming Dockerfile and app source are in the same directory
-//     },
-// });
 
 const image = new docker.Image(customRuntimeEnvironmentName, {
     build: {
@@ -51,7 +36,6 @@ const image = new docker.Image(customRuntimeEnvironmentName, {
         platform: 'linux/amd64',
     },
     imageName: renderFaasDockerImageName,
-    // skipPush: true,
 });
 
 // Create a Cloud Run service that uses the Docker image
