@@ -12,7 +12,7 @@ const customRuntimeRepositoryName = `${prefix}-repository`
 
 const config = new pulumi.Config();
 const branchName = config.require('branch');
-const commitSHA = config.require('commitSHA');
+const commitSHA = config.require('commitsha');
 console.log("branch name=", branchName)
 console.log("commit sha=", commitSHA)
 
