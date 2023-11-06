@@ -6,9 +6,9 @@ import * as gcp from "@pulumi/gcp";
 const projectId = 'deleteme-403817'
 const location = 'us-central1'
 const prefix = 'test'
-const customRuntimeEnvironmentRegistry = `${prefix}-artifact-registry`
-const customRuntimeEnvironmentName = `${prefix}-image`
-const customRuntimeRepositoryName = `${prefix}-repository`
+let customRuntimeEnvironmentRegistry = `${prefix}-artifact-registry`
+let customRuntimeEnvironmentName = `${prefix}-image`
+let customRuntimeRepositoryName = `${prefix}-repository`
 
 const config = new pulumi.Config();
 const branchName = config.require('branch');
@@ -16,12 +16,18 @@ const commitSHA = config.require('commitsha');
 console.log("branch name=", branchName)
 console.log("commit sha=", commitSHA)
 
+if (branchName != "main") {
+  customRuntimeEnvironmentRegistry = `preview-artifact-registry`
+  customRuntimeEnvironmentName = `${prefix}-image`
+  customRuntimeRepositoryName = `preview-repository`
+}
+
 // Create a Google Artifact Registry repository to store Docker images
 const repository = new gcp.artifactregistry.Repository(
     customRuntimeEnvironmentRegistry,
     {
       dockerConfig: {
-        immutableTags: true,
+        immutableTags: branchName == "main",
       },
       description: 'Peacock Faas Apps docker repository',
       format: 'DOCKER',
@@ -33,7 +39,7 @@ const repository = new gcp.artifactregistry.Repository(
 // Get registry info (creds and endpoint).
 const renderFaasDockerImageName = repository.name.apply(
     (name) =>
-      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:${branchName}:${commitSHA}`,
+      `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:${branchName == "main" ? "latest" : branchName}`,
   )
 
 const image = new docker.Image(customRuntimeEnvironmentName, {
