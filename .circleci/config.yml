@@ -25,7 +25,7 @@ jobs:
             cat $GOOGLE_APPLICATION_CREDENTIALS
             pulumi login --non-interactive
             pulumi stack select $PULUMI_STACK_NAME
-            pulumi config set --secret gcp:credentials < $GOOGLE_APPLICATION_CREDENTIALS
+            # pulumi config set --secret gcp:credentials < $GOOGLE_APPLICATION_CREDENTIALS
             echo "ok"
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
