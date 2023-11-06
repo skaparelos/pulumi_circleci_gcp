@@ -27,8 +27,7 @@ jobs:
             pulumi stack select $PULUMI_STACK_NAME
             echo "ok"
             # docker login is needed by Pulumi up when doing new docker.Image()
-            cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-            # gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+            # cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
             pulumi up --yes --debug
 
 workflows:
