@@ -7,6 +7,21 @@ pull_requests_only: &pull_requests_only
         - main
         - develop
 
+commands:
+  determine_workflow_path:
+    description: "Determine the workflow path based on git diffs"
+    steps:
+      - run:
+          name: Determine workflow path
+          command: |
+            if git diff --name-only HEAD^ HEAD | grep -q "backend1/"; then
+              echo 'export WORKFLOW_PATH="deploy"' >> $BASH_ENV
+            elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "backend1/"; then
+              echo 'export WORKFLOW_PATH="use-existing"' >> $BASH_ENV
+            else
+              echo 'export WORKFLOW_PATH="default-service"' >> $BASH_ENV
+            fi
+
 jobs:
   build-and-deploy-preview:
     docker:
@@ -18,27 +33,30 @@ jobs:
           name: Install Dependencies
           command: |
             npm install
-      - run: 
-          name: Check for changes in backend since last commit
-          command: |
-            if git diff --name-only HEAD^ HEAD | grep -q "backend1/"; then
-              echo 'export BACKEND_CHANGED=true' >> $BASH_ENV
-            else
-              echo 'export BACKEND_CHANGED=false' >> $BASH_ENV
-            fi
-      - run:
-          name: Check for initial changes in backend since diverging from main
-          command: |
-            if [ "$BACKEND_CHANGED" == "false" ]; then
-              if git diff --name-only $(git merge-base HEAD origin/main)...HEAD | grep -q "backend1/"; then
-                echo 'export INITIAL_BACKEND_CHANGED=true' >> $BASH_ENV
-              else
-                echo 'export INITIAL_BACKEND_CHANGED=false' >> $BASH_ENV
-              fi
-            fi
+      # - run: 
+      #     name: Check for changes in backend since last commit
+      #     command: |
+      #       if git diff --name-only HEAD^ HEAD | grep -q "backend1/"; then
+      #         echo 'export BACKEND_CHANGED=true' >> $BASH_ENV
+      #       else
+      #         echo 'export BACKEND_CHANGED=false' >> $BASH_ENV
+      #       fi
+      # - run:
+      #     name: Check for initial changes in backend since diverging from main
+      #     command: |
+      #       if [ "$BACKEND_CHANGED" == "false" ]; then
+      #         if git diff --name-only $(git merge-base HEAD origin/main)...HEAD | grep -q "backend1/"; then
+      #           echo 'export INITIAL_BACKEND_CHANGED=true' >> $BASH_ENV
+      #         else
+      #           echo 'export INITIAL_BACKEND_CHANGED=false' >> $BASH_ENV
+      #         fi
+      #       fi
+      - determine_workflow_path
       - run:
           name: Deploy to GCP
           command: |
+
+
             echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
 
@@ -49,9 +67,17 @@ jobs:
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
             pulumi stack select preview
-            pulumi config set branch ${CIRCLE_BRANCH}
-            pulumi config set commitsha ${CIRCLE_SHA1}
-            pulumi up --yes --debug
+
+            if [ "$WORKFLOW_PATH" = "deploy" ]; then
+              pulumi config set branch ${CIRCLE_BRANCH}
+              pulumi config set commitsha ${CIRCLE_SHA1}
+              pulumi up --yes --debug
+            elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
+              echo "use-existing"
+            elif [ "$WORKFLOW_PATH" = "default-service" ]; then
+              echo "default-service"
+            fi
+
             # pulumi up --yes --json > pulumi-output.json
             # echo "cat pulumi-output.json"
             # cat pulumi-output.json

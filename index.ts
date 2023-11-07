@@ -52,7 +52,7 @@ const image = new docker.Image(customRuntimeEnvironmentName, {
 });
 
 // Create a Cloud Run service that uses the Docker image
-const service = new gcp.cloudrun.Service(`${prefix}-service${stack == "main" ? ""  : "-" + branchName + "-preview"}`, {
+const service = new gcp.cloudrun.Service(`${prefix}-service${stack == "production" ? ""  : "-" + branchName + "-preview"}`, {
   location: "us-central1",
   template: {
     spec: {
