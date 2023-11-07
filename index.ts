@@ -82,8 +82,8 @@ if (stack == "preview") {
     exports.url = existingService.then(s => {
       console.log("s=")
       console.log(s); // This will log the entire 's' object
-      console.log(s.statuses.length)
-      return s?.statuses[0].url; // Continue with the rest of your logic
+      console.log(s?.status.url)
+      return s?.status.url; // Continue with the rest of your logic
     })
   } else {
 
