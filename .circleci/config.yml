@@ -66,11 +66,11 @@ jobs:
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
-            pulumi stack select preview
+            pulumi stack select --create ${CIRCLE_BRANCH}
 
             if [ "$WORKFLOW_PATH" = "deploy" ]; then
               pulumi config set branch ${CIRCLE_BRANCH}
-              pulumi config set commitsha ${CIRCLE_SHA1}
+              # pulumi config set commitsha ${CIRCLE_SHA1}
               pulumi up --yes --debug
             elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
               echo "use-existing"
