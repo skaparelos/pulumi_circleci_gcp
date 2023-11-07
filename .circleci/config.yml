@@ -65,7 +65,9 @@ jobs:
 
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-
+            pulumi stack select --create shared
+            pulumi up --cwd infra/shared
+            
             pulumi stack select --create ${CIRCLE_BRANCH}
 
             if [ "$WORKFLOW_PATH" = "deploy" ]; then
