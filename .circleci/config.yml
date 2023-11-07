@@ -56,7 +56,6 @@ jobs:
           name: Deploy to GCP
           command: |
 
-
             echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
 
@@ -66,18 +65,29 @@ jobs:
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
-            # pulumi stack select preview
+            cd infra/shared
+            echo "creating sharedd...."
+            pulumi stack select --create shared
+            pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
+            pulumi config set branch ${CIRCLE_BRANCH}
+            pulumi up --yes
+
+            cd ../preview
             pulumi stack select --create ${CIRCLE_BRANCH}
 
             if [ "$WORKFLOW_PATH" = "deploy" ]; then
+              echo "creating preview...."
+              pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
               # pulumi config set commitsha ${CIRCLE_SHA1}
-              pulumi up --yes --debug
+              pulumi up --yes --debug 
             elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
               echo "use-existing"
             elif [ "$WORKFLOW_PATH" = "default-service" ]; then
               echo "default-service"
             fi
+
+            cd ../
 
             # pulumi up --yes --json > pulumi-output.json
             # echo "cat pulumi-output.json"
