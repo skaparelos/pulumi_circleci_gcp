@@ -32,7 +32,7 @@ const repository = new gcp.artifactregistry.Repository(
       immutableTags: false,
     },
     description: 'Contains the preview repository',
-    format: 'DOCKER',
+    format: 'DOCKER', 
     location,
     repositoryId: customRuntimeRepositoryName,
   },
