@@ -17,23 +17,13 @@ const stack = pulumi.getStack();
 console.log("branch name=", branchName)
 console.log("commit sha=", commitSHA)
 console.log("Stack =", stack)
-const backendChanged = process.env.BACKEND_CHANGED === 'true';
 
-const previewDefaultRepository = new gcp.artifactregistry.Repository(
-  "preview-default-artifact-registry",
-  {
-    dockerConfig: {
-      immutableTags: false,
-    },
-    description: 'Contains the images built for to be used by the default preview services',
-    format: 'DOCKER',
-    location,
-    repositoryId: "preview-default-repository",
-  },
-)
+// Environment variables from CI/CD
+const backendChanged = process.env.BACKEND_CHANGED === 'true';
+const initialBackendChanged = process.env.INITIAL_BACKEND_CHANGED === 'true';
+
 
 if (stack == "preview") {
-
   customRuntimeEnvironmentRegistry = `preview-artifact-registry`
   customRuntimeEnvironmentName = `${prefix}-image`
   customRuntimeRepositoryName = `preview-repository`
@@ -64,12 +54,10 @@ if (stack == "preview") {
         platform: 'linux/amd64',
       },
       imageName: renderFaasDockerImageName,
-      // ...branchName === "main" && { additionalTagNames: ["latest"] },
-      // ...branchName !== "main" && { additionalTagNames: [branchName] },
     });
 
     // Create a Cloud Run service that uses the Docker image
-    const service = new gcp.cloudrun.Service("app-service", {
+    const service = new gcp.cloudrun.Service(`app-service-${branchName}-preview`, {
       location: "us-central1",
       template: {
         spec: {
@@ -82,10 +70,66 @@ if (stack == "preview") {
 
     // Export the URL of the deployed service
     exports.url = service.statuses[0].url;
+
+  } else if (initialBackendChanged) {
+    // Get the URL from the existing service because there have been changes since the branch diverged from main
+    const existingService = gcp.cloudrun.getService({
+      name: `app-service-${branchName}-preview`,
+      location: "us-central1"
+    });
+
+    exports.url = existingService.statuses[0].url;
   } else {
 
+    // No changes in backend; use the default service URL
+    const existingService = gcp.cloudrun.getService({
+      name: `app-service-default-preview`,
+      location: "us-central1"
+    });
+
+    exports.url = existingService.statuses[0].url;
+
+    // const repository = new gcp.artifactregistry.Repository(
+    //   "preview-default-artifact-registry",
+    //   {
+    //     dockerConfig: {
+    //       immutableTags: false,
+    //     },
+    //     description: 'Contains the images built for to be used by the default preview services',
+    //     format: 'DOCKER',
+    //     location,
+    //     repositoryId: "preview-default-repository",
+    //   },
+    // )
+
+    // const renderFaasDockerImageName = repository.name.apply(
+    //   (name) =>
+    //     `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:preview`,
+    // )
+
+    // const image = new docker.Image(customRuntimeEnvironmentName, {
+    //   build: {
+    //     context: "./backend1/",
+    //     platform: 'linux/amd64',
+    //   },
+    //   imageName: renderFaasDockerImageName,
+    // });
+
+    // const service = new gcp.cloudrun.Service(`${prefix}-service-preview`, {
+    //   location: "us-central1",
+    //   template: {
+    //     spec: {
+    //       containers: [{
+    //         image: image.imageName,
+    //       }],
+    //     },
+    //   },
+    // });
+
+    // exports.url = service.statuses[0].url;
   }
 }
+
 
 if (stack == "production") {
   const repository = new gcp.artifactregistry.Repository(
