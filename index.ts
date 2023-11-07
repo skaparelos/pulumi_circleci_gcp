@@ -75,15 +75,15 @@ if (stack == "preview") {
   } else if (initialBackendChanged) {
     // Get the URL from the existing service because there have been changes since the branch diverged from main
     const existingService = gcp.cloudrun.getService({
-      name: `app-service-${branchName}-preview`,
+      // name: `app-service-${branchName}-preview`,
+      name: `app-service-pmbt-831-preview-5e219d8`,
       location: "us-central1"
     });
     
     exports.url = existingService.then(s => {
       console.log("s=")
-      console.log(s); // This will log the entire 's' object
-      console.log(s?.status.url)
-      return s?.status.url; // Continue with the rest of your logic
+      console.log(s); 
+      return s?.statuses?.[0]?.url;
     })
   } else {
 
