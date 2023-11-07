@@ -66,6 +66,7 @@ jobs:
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
             pulumi stack select --create shared
+            pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
             pulumi config set branch ${CIRCLE_BRANCH}
             pulumi up --yes --cwd infra/shared
 
