@@ -78,7 +78,7 @@ if (stack == "preview") {
       location: "us-central1"
     });
 
-    exports.url = existingService.statuses[0].url;
+    exports.url = existingService.then(s => s.statuses[0].url)
   } else {
 
     // No changes in backend; use the default service URL
@@ -87,7 +87,7 @@ if (stack == "preview") {
       location: "us-central1"
     });
 
-    exports.url = existingService.statuses[0].url;
+    exports.url = existingService.then(s => s.statuses[0].url)
 
     // const repository = new gcp.artifactregistry.Repository(
     //   "preview-default-artifact-registry",
