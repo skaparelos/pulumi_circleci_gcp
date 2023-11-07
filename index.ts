@@ -78,8 +78,13 @@ if (stack == "preview") {
       name: `app-service-${branchName}-preview`,
       location: "us-central1"
     });
-
-    exports.url = existingService.then(s => s.statuses[0].url)
+    
+    exports.url = existingService.then(s => {
+      console.log("s=")
+      console.log(s); // This will log the entire 's' object
+      console.log(s.statuses.length)
+      return s?.statuses[0].url; // Continue with the rest of your logic
+    })
   } else {
 
     // No changes in backend; use the default service URL
