@@ -1,0 +1,6 @@
+name: pulumi-tests
+runtime: nodejs
+description: A minimal Google Cloud TypeScript Pulumi program
+config:
+  gcp:project: deleteme-403817
+  gcp:region: us-central1
