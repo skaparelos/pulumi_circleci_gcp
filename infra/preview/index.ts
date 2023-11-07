@@ -37,7 +37,7 @@ const renderFaasDockerImageName = pulumi.all([repositoryName, "us-central1", pro
 
 const image = new docker.Image(customRuntimeEnvironmentName, {
   build: {
-    context: "./backend1/",
+    context: "../../backend1/",
     platform: 'linux/amd64',
   },
   imageName: renderFaasDockerImageName,
