@@ -26,7 +26,7 @@ if (stack == "preview") {
 }
 
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
-const repository = sharedStack.getOutput("previewRepository")
+// const repository = sharedStack.getOutput("previewRepository")
 const repositoryName = sharedStack.getOutput("repositoryName");
 
 
