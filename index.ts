@@ -11,8 +11,8 @@ let customRuntimeEnvironmentName = `${prefix}-image`
 let customRuntimeRepositoryName = `${prefix}-repository`
 
 const config = new pulumi.Config()
-const branchName = config.require('branch')
-const commitSHA = config.require('commitsha')
+const branchName = config.require('branch')?.toLowerCase()
+const commitSHA = config.require('commitsha')?.toLowerCase()
 const stack = pulumi.getStack();
 console.log("branch name=", branchName)
 console.log("commit sha=", commitSHA)
@@ -21,7 +21,6 @@ console.log("Stack =", stack)
 // Environment variables from CI/CD
 const backendChanged = process.env.BACKEND_CHANGED === 'true';
 const initialBackendChanged = process.env.INITIAL_BACKEND_CHANGED === 'true';
-
 
 if (stack == "preview") {
   customRuntimeEnvironmentRegistry = `preview-artifact-registry`
