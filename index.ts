@@ -12,84 +12,92 @@ let customRuntimeRepositoryName = `${prefix}-repository`
 
 const config = new pulumi.Config()
 const branchName = config.require('branch')?.toLowerCase()
-const commitSHA = config.require('commitsha')?.toLowerCase()
+// const commitSHA = config.require('commitsha')?.toLowerCase()
 const stack = pulumi.getStack();
 console.log("branch name=", branchName)
-console.log("commit sha=", commitSHA)
+// console.log("commit sha=", commitSHA)
 console.log("Stack =", stack)
 
-// Environment variables from CI/CD
-const backendChanged = process.env.BACKEND_CHANGED === 'true';
-const initialBackendChanged = process.env.INITIAL_BACKEND_CHANGED === 'true';
-console.log("backendChanged= ", backendChanged)
-console.log("initialBackendChanged=", initialBackendChanged)
 
 if (stack == "preview") {
   customRuntimeEnvironmentRegistry = `preview-artifact-registry`
   customRuntimeEnvironmentName = `${prefix}-image`
   customRuntimeRepositoryName = `preview-repository`
+}
 
-  const repository = new gcp.artifactregistry.Repository(
-    customRuntimeEnvironmentRegistry,
-    {
-      dockerConfig: {
-        immutableTags: false,
-      },
-      description: 'Contains the preview repository',
-      format: 'DOCKER',
-      location,
-      repositoryId: customRuntimeRepositoryName,
+const repository = new gcp.artifactregistry.Repository(
+  customRuntimeEnvironmentRegistry,
+  {
+    dockerConfig: {
+      immutableTags: false,
     },
-  )
+    description: 'Contains the preview repository',
+    format: 'DOCKER',
+    location,
+    repositoryId: customRuntimeRepositoryName,
+  },
+)
 
-  if (backendChanged) {
-    // Get registry info (creds and endpoint).
-    const renderFaasDockerImageName = repository.name.apply(
-      (name) =>
-        `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:${branchName}`,
-    )
+const renderFaasDockerImageName = repository.name.apply(
+  (name) =>
+    `${location}-docker.pkg.dev/${projectId}/${name}/${customRuntimeEnvironmentName}:${stack == "production"? "latest" : branchName}`,
+)
 
-    const image = new docker.Image(customRuntimeEnvironmentName, {
-      build: {
-        context: "./backend1/",
-        platform: 'linux/amd64',
-      },
-      imageName: renderFaasDockerImageName,
-    });
+const image = new docker.Image(customRuntimeEnvironmentName, {
+  build: {
+    context: "./backend1/",
+    platform: 'linux/amd64',
+  },
+  imageName: renderFaasDockerImageName,
+});
 
-    // Create a Cloud Run service that uses the Docker image
-    const service = new gcp.cloudrun.Service(`app-service-${branchName}-preview`, {
-      location: "us-central1",
-      template: {
-        spec: {
-          containers: [{
-            image: image.imageName,
-          }],
-        },
-      },
-    });
+// Create a Cloud Run service that uses the Docker image
+const service = new gcp.cloudrun.Service(`${prefix}-service${stack == "main" ? ""  : "-" + branchName + "-preview"}`, {
+  location: "us-central1",
+  template: {
+    spec: {
+      containers: [{
+        image: image.imageName,
+      }],
+    },
+  },
+});
 
-    // Export the URL of the deployed service
-    exports.url = service.statuses[0].url;
+// Export the URL of the deployed service
+exports.url = service.statuses[0].url;
 
-  } else if (initialBackendChanged) {
-    // Get the URL from the existing service because there have been changes since the branch diverged from main
-    const existingService = gcp.cloudrun.getService({
-      name: `app-service-${branchName}-preview`,
-      // name: `app-service-pmbt-831-preview`,
-      location: "us-central1"
-    });
+
+
+
+
+
+
+
+
+
+
+  // if (backendChanged) {
+  //   // Get registry info (creds and endpoint).
     
-    exports.url = existingService.then(s => s?.statuses?.[0].url)
-  } else {
 
-    // No changes in backend; use the default service URL
-    const existingService = gcp.cloudrun.getService({
-      name: `app-service-default-preview`,
-      location: "us-central1"
-    });
+  // } else if (initialBackendChanged) {
+  //   // Get the URL from the existing service because there have been changes since the branch diverged from main
+  //   const existingService = gcp.cloudrun.getService({
+  //     // name: `app-service-${branchName}-preview`,
+  //     name: `app-service-pmbt-831-preview`,
+  //     location: "us-central1"
+  //   });
+    
+  //   exports.url = existingService.then(s => s?.statuses?.[0].url)
+  // } else {
 
-    exports.url = existingService.then(s => s.statuses[0].url)
+  //   // No changes in backend; use the default service URL
+  //   const existingService = gcp.cloudrun.getService({
+  //     name: `app-service-default-preview`,
+  //     location: "us-central1"
+  //   });
+
+  //   exports.url = existingService.then(s => s.statuses[0].url)
 
     // const repository = new gcp.artifactregistry.Repository(
     //   "preview-default-artifact-registry",
@@ -129,24 +137,24 @@ if (stack == "preview") {
     // });
 
     // exports.url = service.statuses[0].url;
-  }
-}
+//   }
+// }
 
 
-if (stack == "production") {
-  const repository = new gcp.artifactregistry.Repository(
-    customRuntimeEnvironmentRegistry,
-    {
-      dockerConfig: {
-        immutableTags: true,
-      },
-      description: 'Contains the image repository',
-      format: 'DOCKER',
-      location,
-      repositoryId: customRuntimeRepositoryName,
-    },
-  )
-}
+// if (stack == "production") {
+//   const repository = new gcp.artifactregistry.Repository(
+//     customRuntimeEnvironmentRegistry,
+//     {
+//       dockerConfig: {
+//         immutableTags: true,
+//       },
+//       description: 'Contains the image repository',
+//       format: 'DOCKER',
+//       location,
+//       repositoryId: customRuntimeRepositoryName,
+//     },
+//   )
+// }
 
 
 
