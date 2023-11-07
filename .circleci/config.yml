@@ -40,9 +40,10 @@ jobs:
               # docker login is needed by Pulumi up when doing new docker.Image()
               cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
+              pulumi stack select preview
               pulumi config set branch ${CIRCLE_BRANCH}
               pulumi config set commitsha ${CIRCLE_SHA1}
-              pulumi up --yes --debug --stack preview
+              pulumi up --yes --debug
             fi
 
   update-on-pr-merge:
