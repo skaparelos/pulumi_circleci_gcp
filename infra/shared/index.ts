@@ -7,6 +7,7 @@ import * as gcp from "@pulumi/gcp";
 const location = 'us-central1'
 // const prefix = 'test'
 
+console.log("doing shared...")
 
 const repository = new gcp.artifactregistry.Repository(
   "preview-artifact-registry",
