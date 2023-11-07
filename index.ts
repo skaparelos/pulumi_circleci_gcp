@@ -21,6 +21,8 @@ console.log("Stack =", stack)
 // Environment variables from CI/CD
 const backendChanged = process.env.BACKEND_CHANGED === 'true';
 const initialBackendChanged = process.env.INITIAL_BACKEND_CHANGED === 'true';
+console.log("backendChanged= ", backendChanged)
+console.log("initialBackendChanged=", initialBackendChanged)
 
 if (stack == "preview") {
   customRuntimeEnvironmentRegistry = `preview-artifact-registry`
