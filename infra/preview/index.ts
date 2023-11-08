@@ -6,27 +6,15 @@ import * as gcp from "@pulumi/gcp";
 const projectId = 'deleteme-403817'
 const location = 'us-central1'
 const prefix = 'test'
-let customRuntimeEnvironmentRegistry = `${prefix}-artifact-registry`
+
 let customRuntimeEnvironmentName = `${prefix}-image`
-let customRuntimeRepositoryName = `${prefix}-repository`
 
 const config = new pulumi.Config()
 const branchName = config.require('branch')?.toLowerCase()
-// const commitSHA = config.require('commitsha')?.toLowerCase()
-const stack = pulumi.getStack();
 console.log("branch name=", branchName)
-// console.log("commit sha=", commitSHA)
-console.log("Stack =", stack)
 
-
-if (stack == "preview") {
-  customRuntimeEnvironmentRegistry = `preview-artifact-registry`
-  customRuntimeEnvironmentName = `${prefix}-image`
-  customRuntimeRepositoryName = `preview-repository`
-}
-
+// gets repository from 'shared' stack
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
-// const repository = sharedStack.getOutput("previewRepository")
 const repositoryName = sharedStack.getOutput("repositoryName");
 
 
@@ -44,7 +32,7 @@ const image = new docker.Image(customRuntimeEnvironmentName, {
 });
 
 // Create a Cloud Run service that uses the Docker image
-const service = new gcp.cloudrun.Service(`${prefix}-service${stack == "production" ? ""  : "-" + branchName + "-preview"}`, {
+const service = new gcp.cloudrun.Service(`${prefix}-service-${branchName}-preview`, {
   location: "us-central1",
   template: {
     spec: {
