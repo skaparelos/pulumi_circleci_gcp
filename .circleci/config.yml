@@ -80,8 +80,6 @@ jobs:
             fi
 
             cd ../../
-            echo "pwd="
-            pwd
 
             export SERVICE_URL=$URL
             echo "$SERVICE_URL" > service_url.txt
