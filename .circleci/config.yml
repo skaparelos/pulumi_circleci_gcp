@@ -103,18 +103,31 @@ jobs:
           command: |
             npm install
       - run: 
-          name: destroy resources for ${CIRCLE_BRANCH}
+          name: Update default-preview on merge
           command: |
-
             # on merge, update default-preview with the merged
             cd infra/default-preview
             pulumi stack select --create default-preview
             pulumi up --yes --debug
-
-            # on merge, delete resources created for ${CIRCLE_BRANCH}
+      - run: 
+          name: Destroy resources for merged branch
+          command: |
+            # on merge, delete resources created 
+            git checkout main
+            git fetch
             cd ../preview
-            pulumi stack select ${CIRCLE_BRANCH}
-            pulumi destroy --stack skaparelos/pulumi-tests/${CIRCLE_BRANCH} --yes
+            # List branches merged into main
+            MERGED_BRANCHES=$(git branch --merged main | grep -v '^\*' | tr -d '[:space:]')
+
+            # Loop over the list and perform cleanup
+            for branch in $MERGED_BRANCHES; do
+              # Perform your cleanup commands here, for example:
+              echo "Trying branch=$branch"
+              pulumi stack select $branch
+              pulumi destroy --stack skaparelos/pulumi-tests/$branch --yes
+            done
+            # pulumi stack select ${CIRCLE_BRANCH}
+            # pulumi destroy --stack skaparelos/pulumi-tests/${CIRCLE_BRANCH} --yes
 
 workflows:
   version: 2
