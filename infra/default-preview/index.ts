@@ -8,10 +8,6 @@ const location = 'us-central1'
 const prefix = 'test'
 let customRuntimeEnvironmentName = `${prefix}-image`
 
-const config = new pulumi.Config()
-const branchName = config.require('branch')?.toLowerCase()
-console.log("branch name=", branchName)
-
 
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
 const repositoryName = sharedStack.getOutput("repositoryName");
