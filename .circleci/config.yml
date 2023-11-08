@@ -120,7 +120,7 @@ jobs:
             grep --version
 
             # List branches merged into main
-            MERGED_BRANCHES=$(git branch --merged main | grep -v '^\*')
+            MERGED_BRANCHES=$(git branch --merged main | grep -v '^\*' | tr -d '[]')
             echo MERGED_BRANCHES=
             echo $MERGED_BRANCHES
 
