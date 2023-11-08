@@ -33,24 +33,6 @@ jobs:
           name: Install Dependencies
           command: |
             npm install
-      # - run: 
-      #     name: Check for changes in backend since last commit
-      #     command: |
-      #       if git diff --name-only HEAD^ HEAD | grep -q "backend1/"; then
-      #         echo 'export BACKEND_CHANGED=true' >> $BASH_ENV
-      #       else
-      #         echo 'export BACKEND_CHANGED=false' >> $BASH_ENV
-      #       fi
-      # - run:
-      #     name: Check for initial changes in backend since diverging from main
-      #     command: |
-      #       if [ "$BACKEND_CHANGED" == "false" ]; then
-      #         if git diff --name-only $(git merge-base HEAD origin/main)...HEAD | grep -q "backend1/"; then
-      #           echo 'export INITIAL_BACKEND_CHANGED=true' >> $BASH_ENV
-      #         else
-      #           echo 'export INITIAL_BACKEND_CHANGED=false' >> $BASH_ENV
-      #         fi
-      #       fi
       - determine_workflow_path
       - run:
           name: Deploy to GCP
@@ -68,8 +50,8 @@ jobs:
             cd infra/shared
             echo "creating sharedd...."
             pulumi stack select --create shared
-            pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-            pulumi config set branch ${CIRCLE_BRANCH}
+            # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
+            # pulumi config set branch ${CIRCLE_BRANCH}
             pulumi up --yes
 
             cd ../preview
@@ -99,6 +81,7 @@ jobs:
     steps:
       - checkout
       - run: pulumi up --stack production
+        # pulumi destroy -s skaparelos/pulumi-tests/pmbt-832 --yes
 
 workflows:
   version: 2
