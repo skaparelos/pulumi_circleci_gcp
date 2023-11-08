@@ -130,15 +130,16 @@ jobs:
             cd infra/preview
             
             # Loop over the list and perform cleanup
-            for branch in $MERGED_BRANCHES; do
-              # Perform your cleanup commands here, for example:
-              echo "Trying branch=$branch"
-              pulumi stack select $branch
-              pulumi destroy --stack skaparelos/pulumi-tests/$branch --yes
-              pulumi stack rm skaparelos/pulumi-tests/$branch --yes
+            for stack in $MERGED_BRANCHES; do
+              echo "Trying stack=$stack"
+              if pulumi stack ls | grep -q $stack; then
+                  pulumi stack select $stack
+                  pulumi destroy --stack skaparelos/pulumi-tests/$stack --yes
+                  pulumi stack rm skaparelos/pulumi-tests/$stack --yes
+              else
+                  echo "Stack $stack does not exist, skipping."
+              fi
             done
-            # pulumi stack select ${CIRCLE_BRANCH}
-            # pulumi destroy --stack skaparelos/pulumi-tests/${CIRCLE_BRANCH} --yes
 
 workflows:
   version: 2
