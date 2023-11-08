@@ -113,17 +113,16 @@ jobs:
           name: Destroy resources for merged branch
           command: |
             # on merge, delete resources created 
-            git checkout main
-            git fetch
+            # git checkout main
+            # git fetch
 
-            echo "edw"
-            grep --version
+            
 
             # List branches merged into main
-            MERGED_BRANCHES=$(git branch --merged main | grep -v '^\*' | tr -d '[]')
+            MERGED_BRANCHES=$(git branch --merged main)
             echo MERGED_BRANCHES=
             echo $MERGED_BRANCHES
-
+            
             cd infra/preview
             
             # Loop over the list and perform cleanup
