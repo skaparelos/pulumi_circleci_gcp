@@ -8,7 +8,6 @@ const location = 'us-central1'
 const prefix = 'test'
 let customRuntimeEnvironmentName = `${prefix}-image`
 
-
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
 const repositoryName = sharedStack.getOutput("repositoryName");
 
