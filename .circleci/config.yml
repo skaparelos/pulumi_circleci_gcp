@@ -149,6 +149,8 @@ workflows:
           <<: *pull_requests_only
       - tests:
           <<: *pull_requests_only
+          requires:
+            - build-and-deploy-preview
       - update-on-pr-merge:
            filters:
             branches:
