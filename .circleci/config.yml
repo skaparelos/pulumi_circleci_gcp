@@ -82,7 +82,15 @@ jobs:
       - run: 
           name: destroy resources for ${CIRCLE_BRANCH}
           command: |
-            # pulumi up --stack production
+
+            # on merge, update default-preview with the merged
+            cd infra/default-preview
+            pulumi stack select --create default-preview
+            pulumi up --yes --debug
+
+            # on merge, delete resources created for ${CIRCLE_BRANCH}
+            cd ../preview
+            pulumi stack select ${CIRCLE_BRANCH}
             pulumi destroy --stack skaparelos/pulumi-tests/${CIRCLE_BRANCH} --yes
 
 workflows:
