@@ -110,7 +110,7 @@ jobs:
             pulumi stack select --create default-preview
             pulumi up --yes --debug
       - run: 
-          name: Destroy resources for merged branch
+          name: Destroy resources and delete stack for merged branch 
           command: |
             # on merge, delete resources created 
 
@@ -135,6 +135,7 @@ jobs:
               echo "Trying branch=$branch"
               pulumi stack select $branch
               pulumi destroy --stack skaparelos/pulumi-tests/$branch --yes
+              pulumi stack rm skaparelos/pulumi-tests/$branch --yes
             done
             # pulumi stack select ${CIRCLE_BRANCH}
             # pulumi destroy --stack skaparelos/pulumi-tests/${CIRCLE_BRANCH} --yes
