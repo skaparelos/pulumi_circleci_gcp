@@ -119,7 +119,7 @@ jobs:
             
 
             # List branches merged into main
-            MERGED_BRANCHES=$(git branch --merged main)
+            MERGED_BRANCHES=$(git branch -r --merged main)
             echo MERGED_BRANCHES=
             echo $MERGED_BRANCHES
 
