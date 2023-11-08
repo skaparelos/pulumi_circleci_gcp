@@ -66,6 +66,8 @@ jobs:
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
               pulumi up --yes --debug
+              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
+              echo "URL= $URL"
             elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
               echo "use-existing"
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
@@ -77,12 +79,18 @@ jobs:
               echo "URL= $URL"
             fi
 
-            cd ../
+            export SERVICE_URL=$URL
 
-            # pulumi up --yes --json > pulumi-output.json
-            # echo "cat pulumi-output.json"
-            # cat pulumi-output.json
+  tests:
+    docker:
+      - image: pulumi/pulumi:latest
+    steps:
+      - run:
+          name: Run tests
+          command: |
+            echo "URL IN TESTS = $SERVICE_URL"
 
+          
   update-on-pr-merge:
     docker:
       - image: pulumi/pulumi:latest
@@ -138,6 +146,8 @@ workflows:
   build_and_deploy:
     jobs:
       - build-and-deploy-preview:
+          <<: *pull_requests_only
+      - tests:
           <<: *pull_requests_only
       - update-on-pr-merge:
            filters:
