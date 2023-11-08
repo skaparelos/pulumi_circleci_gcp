@@ -81,6 +81,11 @@ jobs:
       - image: pulumi/pulumi:latest
     steps:
       - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Dependencies
+          command: |
+            npm install
       - run: 
           name: destroy resources for ${CIRCLE_BRANCH}
           command: |
