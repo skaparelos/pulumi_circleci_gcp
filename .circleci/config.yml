@@ -49,18 +49,10 @@ jobs:
           command: |
             npm install
       - determine_workflow_path
+      - login
       - run:
           name: Deploy to GCP
           command: |
-
-            echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
-            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
-
-            # for this non-interactive command to work PULUMI_ACCESS_TOKEN must exist an env var
-            pulumi login --non-interactive
-
-            # docker login is needed by Pulumi up when doing new docker.Image()
-            cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
             cd infra/shared
             pulumi stack select --create shared
@@ -74,6 +66,8 @@ jobs:
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
               pulumi up --yes --debug
+              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
+              echo "URL= $URL"
             elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
               echo "use-existing"
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
@@ -85,12 +79,30 @@ jobs:
               echo "URL= $URL"
             fi
 
-            cd ../
+            cd ../../
 
-            # pulumi up --yes --json > pulumi-output.json
-            # echo "cat pulumi-output.json"
-            # cat pulumi-output.json
+            export SERVICE_URL=$URL
+            echo "$SERVICE_URL" > service_url.txt
+      - persist_to_workspace:
+          root: .
+          paths:
+            - service_url.txt
 
+  tests:
+    docker:
+      - image: pulumi/pulumi:latest
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run tests
+          command: |
+            echo "cat service_url.txt"
+            cat service_url.txt
+            SERVICE_URL=$(cat service_url.txt)
+            echo "URL IN TESTS = $SERVICE_URL"
+
+          
   update-on-pr-merge:
     docker:
       - image: pulumi/pulumi:latest
@@ -112,7 +124,7 @@ jobs:
       - run: 
           name: Destroy resources and delete stack for merged branch 
           command: |
-            # on merge, delete resources created 
+            # on merge, delete resources created for preview
 
             git fetch --all
           
@@ -147,6 +159,10 @@ workflows:
     jobs:
       - build-and-deploy-preview:
           <<: *pull_requests_only
+      - tests:
+          <<: *pull_requests_only
+          requires:
+            - build-and-deploy-preview
       - update-on-pr-merge:
            filters:
             branches:
