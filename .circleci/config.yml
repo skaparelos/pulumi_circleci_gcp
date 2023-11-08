@@ -54,11 +54,12 @@ jobs:
           name: Deploy to GCP
           command: |
 
+            cd infra/shared
+
             stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
             echo "stacks="
             echo $stacks
 
-            cd infra/shared
             pulumi stack select --create shared
             pulumi up --yes
 
