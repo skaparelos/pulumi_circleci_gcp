@@ -33,24 +33,6 @@ jobs:
           name: Install Dependencies
           command: |
             npm install
-      # - run: 
-      #     name: Check for changes in backend since last commit
-      #     command: |
-      #       if git diff --name-only HEAD^ HEAD | grep -q "backend1/"; then
-      #         echo 'export BACKEND_CHANGED=true' >> $BASH_ENV
-      #       else
-      #         echo 'export BACKEND_CHANGED=false' >> $BASH_ENV
-      #       fi
-      # - run:
-      #     name: Check for initial changes in backend since diverging from main
-      #     command: |
-      #       if [ "$BACKEND_CHANGED" == "false" ]; then
-      #         if git diff --name-only $(git merge-base HEAD origin/main)...HEAD | grep -q "backend1/"; then
-      #           echo 'export INITIAL_BACKEND_CHANGED=true' >> $BASH_ENV
-      #         else
-      #           echo 'export INITIAL_BACKEND_CHANGED=false' >> $BASH_ENV
-      #         fi
-      #       fi
       - determine_workflow_path
       - run:
           name: Deploy to GCP
@@ -66,10 +48,7 @@ jobs:
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
             cd infra/shared
-            echo "creating sharedd...."
             pulumi stack select --create shared
-            pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-            pulumi config set branch ${CIRCLE_BRANCH}
             pulumi up --yes
 
             cd ../preview
@@ -77,14 +56,16 @@ jobs:
 
             if [ "$WORKFLOW_PATH" = "deploy" ]; then
               echo "creating preview...."
-              pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
+              # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
-              # pulumi config set commitsha ${CIRCLE_SHA1}
-              pulumi up --yes --debug 
+              pulumi up --yes --debug
             elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
               echo "use-existing"
+              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
+              echo "URL= $URL"
             elif [ "$WORKFLOW_PATH" = "default-service" ]; then
               echo "default-service"
+
             fi
 
             cd ../
@@ -95,10 +76,14 @@ jobs:
 
   update-on-pr-merge:
     docker:
-      - image: cimg/base:stable
+      - image: pulumi/pulumi:latest
     steps:
       - checkout
-      - run: pulumi up --stack production
+      - run: 
+          name: destroy resources for ${CIRCLE_BRANCH}
+          command: |
+            # pulumi up --stack production
+            pulumi destroy --stack ${CIRCLE_BRANCH} --yes
 
 workflows:
   version: 2
