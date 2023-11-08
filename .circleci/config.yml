@@ -48,10 +48,7 @@ jobs:
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
             cd infra/shared
-            echo "creating sharedd...."
             pulumi stack select --create shared
-            # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-            # pulumi config set branch ${CIRCLE_BRANCH}
             pulumi up --yes
 
             cd ../preview
@@ -60,7 +57,7 @@ jobs:
             if [ "$WORKFLOW_PATH" = "deploy" ]; then
               echo "creating preview...."
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-              # pulumi config set branch ${CIRCLE_BRANCH}
+              pulumi config set branch ${CIRCLE_BRANCH}
               # pulumi config set commitsha ${CIRCLE_SHA1}
               pulumi up --yes --debug 
             elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
