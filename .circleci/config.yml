@@ -8,6 +8,21 @@ pull_requests_only: &pull_requests_only
         - develop
 
 commands:
+  login: 
+    description: "Logs in GCP & Pulumi & Docker"
+    steps:
+      - run:
+          name: Login 
+          command: |
+            echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
+
+            # for this non-interactive command to work PULUMI_ACCESS_TOKEN must exist an env var
+            pulumi login --non-interactive
+
+            # docker login is needed by Pulumi up when doing new docker.Image()
+            cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
+
   determine_workflow_path:
     description: "Determine the workflow path based on git diffs"
     steps:
@@ -82,6 +97,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - login
       - run:
           name: Install Dependencies
           command: |
