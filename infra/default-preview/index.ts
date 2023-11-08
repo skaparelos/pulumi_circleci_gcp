@@ -11,7 +11,6 @@ let customRuntimeEnvironmentName = `${prefix}-image`
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
 const repositoryName = sharedStack.getOutput("repositoryName");
 
-
 const renderFaasDockerImageName = pulumi.all([repositoryName, "us-central1", projectId])
   .apply(([repoName, repoLocation, projId]) =>
     `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${customRuntimeEnvironmentName}:default-preview`
