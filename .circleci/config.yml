@@ -65,7 +65,9 @@ jobs:
               echo "URL= $URL"
             elif [ "$WORKFLOW_PATH" = "default-service" ]; then
               echo "default-service"
-
+              # cd infra/default-preview
+              # URL=$(pulumi stack output url --stack default-preview)
+              # echo "URL= $URL"
             fi
 
             cd ../
