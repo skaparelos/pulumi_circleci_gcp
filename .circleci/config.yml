@@ -80,9 +80,9 @@ jobs:
               echo "URL= $URL"
             elif [ "$WORKFLOW_PATH" = "default-service" ]; then
               echo "default-service"
-              # cd infra/default-preview
-              # URL=$(pulumi stack output url --stack default-preview)
-              # echo "URL= $URL"
+              cd ../default-preview
+              URL=$(pulumi stack output url --stack default-preview)
+              echo "URL= $URL"
             fi
 
             cd ../
@@ -113,16 +113,20 @@ jobs:
           name: Destroy resources for merged branch
           command: |
             # on merge, delete resources created 
-            # git checkout main
-            # git fetch
 
-            
-
+            git fetch --all
+          
             # List branches merged into main
-            MERGED_BRANCHES=$(git branch --merged main)
+            MERGED_BRANCHES=$(git branch -r --merged origin/main | grep -v 'origin/main$' | sed 's/origin\///')
             echo MERGED_BRANCHES=
             echo $MERGED_BRANCHES
-            
+
+            # Check if MERGED_BRANCHES is empty
+            if [ -z "$MERGED_BRANCHES" ]; then
+              echo "No merged branches to clean up"
+              exit 0  # Exit successfully because it's not an error to have no branches to clean up
+            fi
+
             cd infra/preview
             
             # Loop over the list and perform cleanup
