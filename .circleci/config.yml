@@ -54,8 +54,7 @@ jobs:
           name: Deploy to GCP
           command: |
 
-
-            stacks=$(pulumi stack ls --json | jq -r '.[].name')
+            stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
             echo "stacks="
             echo $stacks
 
