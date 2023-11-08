@@ -56,10 +56,6 @@ jobs:
 
             cd infra/shared
 
-            stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
-            echo "stacks="
-            echo $stacks
-
             pulumi stack select --create shared
             pulumi up --yes
 
@@ -138,27 +134,33 @@ jobs:
             echo MERGED_BRANCHES=
             echo $MERGED_BRANCHES
 
-            stacks=$(pulumi stack ls --json | jq -r '.[].name')
-            echo "stacks="
-            echo $stacks
-
-            # Check if MERGED_BRANCHES is empty
-            if [ -z "$MERGED_BRANCHES" ]; then
-              echo "No merged branches to clean up"
-              exit 0  # Exit successfully because it's not an error to have no branches to clean up
-            fi
-
             cd infra/preview
             
-            # Loop over the list and perform cleanup
+            # Loop over the list and perform cleanup. if they are merged they should be deleted
             for stack in $MERGED_BRANCHES; do
               echo "Trying stack=$stack"
               if pulumi stack ls | grep -q $stack; then
+                  echo "Deleting stack: $stack"
                   pulumi stack select $stack
                   pulumi destroy --stack skaparelos/pulumi-tests/$stack --yes
                   pulumi stack rm skaparelos/pulumi-tests/$stack --yes
               else
                   echo "Stack $stack does not exist, skipping."
+              fi
+            done
+
+            # fetch list with pulumi stacks
+            stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
+            echo "stacks="
+            echo $stacks
+
+            # Check if any stack is in the list of merged branches and delete it
+            for stack in $stacks; do
+              if echo "$MERGED_BRANCHES" | grep -q "^$stack$"; then
+                echo "Deleting stack: $stack"
+                pulumi stack select $stack
+                pulumi destroy --stack skaparelos/pulumi-tests/$stack --yes
+                pulumi stack rm skaparelos/pulumi-tests/$stack --yes
               fi
             done
 
