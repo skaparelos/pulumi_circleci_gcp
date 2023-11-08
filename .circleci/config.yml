@@ -53,10 +53,6 @@ jobs:
           name: Deploy to GCP
           command: |
 
-            MERGED_BRANCHES=$(git branch -r --merged main)
-            echo MERGED_BRANCHES=
-            echo $MERGED_BRANCHES
-
             echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
 
@@ -117,15 +113,19 @@ jobs:
           name: Destroy resources for merged branch
           command: |
             # on merge, delete resources created 
-            # git checkout main
-            # git fetch
 
-            
-
+            git fetch --all
+          
             # List branches merged into main
-            MERGED_BRANCHES=$(git branch -r --merged main)
+            MERGED_BRANCHES=$(git branch -r --merged origin/main | grep -v 'origin/main$' | sed 's/origin\///')
             echo MERGED_BRANCHES=
             echo $MERGED_BRANCHES
+
+            # Check if MERGED_BRANCHES is empty
+            if [ -z "$MERGED_BRANCHES" ]; then
+              echo "No merged branches to clean up"
+              exit 0  # Exit successfully because it's not an error to have no branches to clean up
+            fi
 
             cd infra/preview
             
