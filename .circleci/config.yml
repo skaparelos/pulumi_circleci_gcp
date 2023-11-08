@@ -79,6 +79,8 @@ jobs:
               echo "URL= $URL"
             fi
 
+            cd ~
+
             export SERVICE_URL=$URL
             echo "$SERVICE_URL" > service_url.txt
       - persist_to_workspace:
