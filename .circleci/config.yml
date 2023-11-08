@@ -59,8 +59,8 @@ jobs:
 
             if [ "$WORKFLOW_PATH" = "deploy" ]; then
               echo "creating preview...."
-              pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-              pulumi config set branch ${CIRCLE_BRANCH}
+              # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
+              # pulumi config set branch ${CIRCLE_BRANCH}
               # pulumi config set commitsha ${CIRCLE_SHA1}
               pulumi up --yes --debug 
             elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
