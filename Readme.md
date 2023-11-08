@@ -7,5 +7,5 @@
   1. if there’s a change in a service between 2 consequent commits, then deploy this service in preview and use that URL for tests
   2. if there’s NOT a change in a service between 2 consequent commits, but there is a git diff between origin/main in that service, then get the url of the service in preview
   3. if there’s NO change at all for that service, use default preview service URL
-* default preview infrastructure created by pulumi with tag 'default-preview'. This is updated whenever there is a PR merge to the main branch by `update-on-pr-merge` at circleci
+* default preview infrastructure created by pulumi with tag `default-preview`. This is updated whenever there is a PR merge to the main branch by `update-on-pr-merge` at circleci
 * On PR merge: Destroy stack resources and delete stack for merged branch
