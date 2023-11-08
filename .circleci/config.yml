@@ -68,8 +68,12 @@ jobs:
             echo $stacks
 
             for stack in $stacks; do
-              if echo "$MERGED_BRANCHES" | grep -q "$stack"; then
+              echo "stack=$stack"
+              echo $MERGED_BRANCHES
+              if echo $MERGED_BRANCHES | grep -q "$stack"; then
                 echo "Fake Deleting stack: $stack"
+              else
+                echo "nope"
               fi
             done
 
