@@ -56,31 +56,6 @@ jobs:
 
             cd infra/shared
 
-
-
-            MERGED_BRANCHES=$(git branch -r --merged origin/main | grep -v 'origin/main$' | sed 's/origin\///')
-            echo MERGED_BRANCHES=
-            echo $MERGED_BRANCHES
-
-
-            stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
-            echo "stacks="
-            echo $stacks
-
-            for stack in $stacks; do
-              echo "stack=$stack"
-              echo $MERGED_BRANCHES
-              if echo $MERGED_BRANCHES | grep -q "$stack"; then
-                echo "Fake Deleting stack: $stack"
-              else
-                echo "nope"
-              fi
-            done
-
-
-
-
-
             pulumi stack select --create shared
             pulumi up --yes
 
@@ -181,7 +156,7 @@ jobs:
 
             # Check if any stack is in the list of merged branches and delete it
             for stack in $stacks; do
-              if echo "$MERGED_BRANCHES" | grep -q "^$stack$"; then
+              if echo $MERGED_BRANCHES | grep "$stack"; then
                 echo "Deleting stack: $stack"
                 pulumi stack select $stack
                 pulumi destroy --stack skaparelos/pulumi-tests/$stack --yes
