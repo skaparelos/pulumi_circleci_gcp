@@ -117,7 +117,9 @@ jobs:
             # git fetch
 
             # List branches merged into main
-            MERGED_BRANCHES=$(git branch --merged main | grep -v '^\*' | tr -d '[:space:]')
+            MERGED_BRANCHES=$(git branch --merged main | grep -v '^\*')
+            echo MERGED_BRANCHES=
+            echo $MERGED_BRANCHES
 
             cd infra/preview
             
