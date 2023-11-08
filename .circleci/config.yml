@@ -80,14 +80,24 @@ jobs:
             fi
 
             export SERVICE_URL=$URL
+            echo "$SERVICE_URL" > service_url.txt
+      - persist_to_workspace:
+          root: .
+          paths:
+            - service_url.txt
 
   tests:
     docker:
       - image: pulumi/pulumi:latest
     steps:
+      - attach_workspace:
+          at: .
       - run:
           name: Run tests
           command: |
+            echo "cat service_url.txt"
+            cat service_url.txt
+            SERVICE_URL=$(cat service_url.txt)
             echo "URL IN TESTS = $SERVICE_URL"
 
           
