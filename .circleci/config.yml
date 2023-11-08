@@ -83,7 +83,7 @@ jobs:
           name: destroy resources for ${CIRCLE_BRANCH}
           command: |
             # pulumi up --stack production
-            pulumi destroy --stack ${CIRCLE_BRANCH} --yes
+            pulumi destroy --stack skaparelos/pulumi-tests/${CIRCLE_BRANCH} --yes
 
 workflows:
   version: 2
