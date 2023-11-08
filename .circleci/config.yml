@@ -65,7 +65,9 @@ jobs:
               echo "URL= $URL"
             elif [ "$WORKFLOW_PATH" = "default-service" ]; then
               echo "default-service"
-
+              # cd infra/default-preview
+              # URL=$(pulumi stack output url --stack default-preview)
+              # echo "URL= $URL"
             fi
 
             cd ../
@@ -82,8 +84,16 @@ jobs:
       - run: 
           name: destroy resources for ${CIRCLE_BRANCH}
           command: |
-            # pulumi up --stack production
-            pulumi destroy --stack ${CIRCLE_BRANCH} --yes
+
+            # on merge, update default-preview with the merged
+            cd infra/default-preview
+            pulumi stack select --create default-preview
+            pulumi up --yes --debug
+
+            # on merge, delete resources created for ${CIRCLE_BRANCH}
+            cd ../preview
+            pulumi stack select ${CIRCLE_BRANCH}
+            pulumi destroy --stack skaparelos/pulumi-tests/${CIRCLE_BRANCH} --yes
 
 workflows:
   version: 2
