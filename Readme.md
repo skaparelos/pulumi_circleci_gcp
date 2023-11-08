@@ -1,4 +1,4 @@
-* pulumi/circleci integration
+* pulumi/circleci integration works
 * preview-artifact registry
   * contains preview images identified by branch tag. e.g. for service named 'test-graphql' on branch pmbt-722 it would be stored as `test-graphql-image:pmbt-722`. any diff changes will override that image. This is only for preview, and gives ability to easily handle/deal with images
   * saves space by overwriting existing images, instead of creating new ones
