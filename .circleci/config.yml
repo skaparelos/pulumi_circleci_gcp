@@ -37,15 +37,51 @@ commands:
             echo "Cat workflow_paths.env"
             cat workflow_paths.env
 
-  custom_command:
+  deploy_to_gcp:
     parameters:
-      param1:
+      serviceName:
         type: string
-      param2:
-        type: integer
     steps:
-      - run: echo "Parameter 1 is << parameters.param1 >>"
-      - run: echo "Parameter 2 is << parameters.param2 >>"
+      - run: echo "Parameter 1 is << parameters.serviceName >>"
+      - run:
+          name: Deploy to GCP
+          command: |
+
+            cd infra/shared
+
+            pulumi stack select --create shared
+            pulumi up --yes
+
+            cd ../preview
+            pulumi stack select --create ${CIRCLE_BRANCH}
+
+            if [ "$WORKFLOW_PATH" = "deploy" ]; then
+              echo "creating preview...."
+              # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
+              pulumi config set branch ${CIRCLE_BRANCH}
+              pulumi config set serviceName << parameters.serviceName >>
+              pulumi up --yes --debug
+              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
+              echo "URL= $URL"
+            elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
+              echo "use-existing"
+              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
+              echo "URL= $URL"
+            elif [ "$WORKFLOW_PATH" = "default-service" ]; then
+              echo "default-service"
+              cd ../default-preview
+              URL=$(pulumi stack output url --stack default-preview)
+              echo "URL= $URL"
+            fi
+
+            cd ../../
+
+            export SERVICE_URL=$URL
+            echo "$SERVICE_URL" > service_url.txt
+      - persist_to_workspace:
+          root: .
+          paths:
+            - service_url.txt
 
 jobs:
   determine_workflow_path:
@@ -90,48 +126,47 @@ jobs:
             npm install
       - load_workflow_paths
       - login
-      - custom_command:
-          param1: "Hello"
-          param2: 123
-      - run:
-          name: Deploy to GCP
-          command: |
+      - deploy_to_gcp:
+          param1: "backend1"
+      # - run:
+      #     name: Deploy to GCP
+      #     command: |
 
-            cd infra/shared
+      #       cd infra/shared
 
-            pulumi stack select --create shared
-            pulumi up --yes
+      #       pulumi stack select --create shared
+      #       pulumi up --yes
 
-            cd ../preview
-            pulumi stack select --create ${CIRCLE_BRANCH}
+      #       cd ../preview
+      #       pulumi stack select --create ${CIRCLE_BRANCH}
 
-            if [ "$WORKFLOW_PATH" = "deploy" ]; then
-              echo "creating preview...."
-              # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-              pulumi config set branch ${CIRCLE_BRANCH}
-              pulumi config set serviceName backend1
-              pulumi up --yes --debug
-              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-              echo "URL= $URL"
-            elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
-              echo "use-existing"
-              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-              echo "URL= $URL"
-            elif [ "$WORKFLOW_PATH" = "default-service" ]; then
-              echo "default-service"
-              cd ../default-preview
-              URL=$(pulumi stack output url --stack default-preview)
-              echo "URL= $URL"
-            fi
+      #       if [ "$WORKFLOW_PATH" = "deploy" ]; then
+      #         echo "creating preview...."
+      #         # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
+      #         pulumi config set branch ${CIRCLE_BRANCH}
+      #         pulumi config set serviceName backend1
+      #         pulumi up --yes --debug
+      #         URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
+      #         echo "URL= $URL"
+      #       elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
+      #         echo "use-existing"
+      #         URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
+      #         echo "URL= $URL"
+      #       elif [ "$WORKFLOW_PATH" = "default-service" ]; then
+      #         echo "default-service"
+      #         cd ../default-preview
+      #         URL=$(pulumi stack output url --stack default-preview)
+      #         echo "URL= $URL"
+      #       fi
 
-            cd ../../
+      #       cd ../../
 
-            export SERVICE_URL=$URL
-            echo "$SERVICE_URL" > service_url.txt
-      - persist_to_workspace:
-          root: .
-          paths:
-            - service_url.txt
+      #       export SERVICE_URL=$URL
+      #       echo "$SERVICE_URL" > service_url.txt
+      # - persist_to_workspace:
+      #     root: .
+      #     paths:
+      #       - service_url.txt
 
   tests:
     docker:
