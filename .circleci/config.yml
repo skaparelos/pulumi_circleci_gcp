@@ -46,7 +46,7 @@ commands:
       - run:
           name: Deploy to GCP
           command: |
-            BACKEND=<< parameters.serviceName >>"
+            BACKEND="<< parameters.serviceName >>"
             echo "heree deploying $BACKEND"
             cd infra/shared
 
