@@ -128,8 +128,8 @@ jobs:
       - login
       - deploy_to_gcp:
           serviceName: "backend1"
-      - deploy_to_gcp:
-          serviceName: "backend2"
+      # - deploy_to_gcp:
+      #     serviceName: "backend2"
 
   tests:
     docker:
