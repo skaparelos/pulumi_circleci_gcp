@@ -78,7 +78,7 @@ jobs:
           name: Install Dependencies
           command: |
             npm install
-      - determine_workflow_path
+      - load_workflow_paths
       - login
       - run:
           name: Deploy to GCP
