@@ -47,6 +47,7 @@ commands:
           name: Deploy to GCP
           command: |
 
+            echo "heree deploying << parameters.serviceName >>"
             cd infra/shared
 
             pulumi stack select --create shared
