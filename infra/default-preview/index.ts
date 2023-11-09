@@ -26,19 +26,18 @@ const image = new docker.Image(customRuntimeEnvironmentName, {
 });
 
 // Create a Cloud Run service that uses the Docker image
-const service = new gcp.cloudrun.Service(`${prefix}-service-default-preview`, {
+const service = new gcp.cloudrunv2.Service(`${prefix}-service-default-preview`, {
+  ingress: "INGRESS_TRAFFIC_ALL",
   location: "us-central1",
   template: {
-    spec: {
-      containers: [{
-        image: image.imageName,
-      }],
-    },
+    containers: [{
+      image: image.imageName,
+    }],
   },
 });
 
 // Export the URL of the deployed service
-exports.url = service.statuses[0].url;
+exports.url = service.uri
 
 
 
