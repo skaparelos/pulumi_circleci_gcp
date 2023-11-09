@@ -46,8 +46,8 @@ commands:
       - run:
           name: Deploy to GCP
           command: |
-
-            echo "heree deploying << parameters.serviceName >>"
+            BACKEND=<< parameters.serviceName >>"
+            echo "heree deploying $BACKEND"
             cd infra/shared
 
             pulumi stack select --create shared
@@ -56,7 +56,7 @@ commands:
             cd ../preview
             pulumi stack select --create ${CIRCLE_BRANCH}
 
-            if [ "$WORKFLOW_PATH" = "deploy" ]; then
+            if [ "WORKFLOW_PATH_${BACKEND}" = "deploy" ]; then
               echo "creating preview...."
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
@@ -64,11 +64,11 @@ commands:
               pulumi up --yes --debug
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"
-            elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
+            elif [ "WORKFLOW_PATH_${BACKEND}" = "use-existing" ]; then
               echo "use-existing"
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"
-            elif [ "$WORKFLOW_PATH" = "default-service" ]; then
+            elif [ "WORKFLOW_PATH_${BACKEND}" = "default-service" ]; then
               echo "default-service"
               cd ../default-preview
               URL=$(pulumi stack output url --stack default-preview)
