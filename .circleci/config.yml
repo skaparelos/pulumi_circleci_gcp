@@ -36,8 +36,18 @@ commands:
             # Now you can use the variables like $WORKFLOW_PATH_backend1
             echo "Cat workflow_paths.env"
             cat workflow_paths.env
-jobs:
 
+  custom_command:
+    parameters:
+      param1:
+        type: string
+      param2:
+        type: integer
+    steps:
+      - run: echo "Parameter 1 is << parameters.param1 >>"
+      - run: echo "Parameter 2 is << parameters.param2 >>"
+
+jobs:
   determine_workflow_path:
     docker:
       - image: cimg/node:lts-browsers
@@ -68,7 +78,7 @@ jobs:
           paths:
             - workflow_paths.env
 
-  build-and-deploy-preview:
+  build-and-deploy-backend1-preview:
     docker:
       - image: pulumi/pulumi:latest
     steps:
@@ -80,6 +90,9 @@ jobs:
             npm install
       - load_workflow_paths
       - login
+      - custom_command:
+          param1: "Hello"
+          param2: 123
       - run:
           name: Deploy to GCP
           command: |
@@ -96,6 +109,7 @@ jobs:
               echo "creating preview...."
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
+              pulumi config set serviceName backend1
               pulumi up --yes --debug
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"
