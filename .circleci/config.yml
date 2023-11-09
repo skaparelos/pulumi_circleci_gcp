@@ -77,7 +77,7 @@ commands:
             cd ../../
 
             export SERVICE_URL=$URL
-            echo "$SERVICE_URL" > service_url.txt
+            echo "$SERVICE_URL" >> service_url.txt
       - persist_to_workspace:
           root: .
           paths:
@@ -128,45 +128,8 @@ jobs:
       - login
       - deploy_to_gcp:
           serviceName: "backend1"
-      # - run:
-      #     name: Deploy to GCP
-      #     command: |
-
-      #       cd infra/shared
-
-      #       pulumi stack select --create shared
-      #       pulumi up --yes
-
-      #       cd ../preview
-      #       pulumi stack select --create ${CIRCLE_BRANCH}
-
-      #       if [ "$WORKFLOW_PATH" = "deploy" ]; then
-      #         echo "creating preview...."
-      #         # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-      #         pulumi config set branch ${CIRCLE_BRANCH}
-      #         pulumi config set serviceName backend1
-      #         pulumi up --yes --debug
-      #         URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-      #         echo "URL= $URL"
-      #       elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
-      #         echo "use-existing"
-      #         URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-      #         echo "URL= $URL"
-      #       elif [ "$WORKFLOW_PATH" = "default-service" ]; then
-      #         echo "default-service"
-      #         cd ../default-preview
-      #         URL=$(pulumi stack output url --stack default-preview)
-      #         echo "URL= $URL"
-      #       fi
-
-      #       cd ../../
-
-      #       export SERVICE_URL=$URL
-      #       echo "$SERVICE_URL" > service_url.txt
-      # - persist_to_workspace:
-      #     root: .
-      #     paths:
-      #       - service_url.txt
+      - deploy_to_gcp:
+          serviceName: "backend2"
 
   tests:
     docker:
