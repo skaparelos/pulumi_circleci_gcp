@@ -48,6 +48,11 @@ commands:
           command: |
             BACKEND="<< parameters.serviceName >>"
             echo "heree deploying $BACKEND"
+            
+            varName="WORKFLOW_PATH_$BACKEND"
+            echo "WORKFLOW_PATH_${BACKEND} = ${!varName}"
+
+            workflowPathValue=${!varName}
             cd infra/shared
 
             pulumi stack select --create shared
@@ -56,7 +61,7 @@ commands:
             cd ../preview
             pulumi stack select --create ${CIRCLE_BRANCH}
 
-            if [ "WORKFLOW_PATH_${BACKEND}" = "deploy" ]; then
+            if [ "$workflowPathValue" = "deploy" ]; then
               echo "creating preview...."
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
@@ -64,11 +69,11 @@ commands:
               pulumi up --yes --debug
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"
-            elif [ "WORKFLOW_PATH_${BACKEND}" = "use-existing" ]; then
+            elif [ "$workflowPathValue" = "use-existing" ]; then
               echo "use-existing"
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"
-            elif [ "WORKFLOW_PATH_${BACKEND}" = "default-service" ]; then
+            elif [ "$workflowPathValue" = "default-service" ]; then
               echo "default-service"
               cd ../default-preview
               URL=$(pulumi stack output url --stack default-preview)
