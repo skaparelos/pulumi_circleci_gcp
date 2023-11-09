@@ -11,6 +11,7 @@ const config = new pulumi.Config()
 const serviceName = config.require('serviceName')?.toLowerCase() ?? 'test'
 const branchName = config.require('branch')?.toLowerCase()
 console.log("branch name=", branchName)
+console.log("serviceName=", serviceName)
 
 const customRuntimeEnvironmentName = `${serviceName}-image`
 
