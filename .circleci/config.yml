@@ -78,7 +78,7 @@ jobs:
           paths:
             - workflow_paths.env
 
-  build-and-deploy-backend1-preview:
+  build-and-deploy-preview:
     docker:
       - image: pulumi/pulumi:latest
     steps:
