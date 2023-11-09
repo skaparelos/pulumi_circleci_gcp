@@ -23,21 +23,51 @@ commands:
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
-  determine_workflow_path:
-    description: "Determine the workflow path based on git diffs"
-    steps:
-      - run:
-          name: Determine workflow path
-          command: |
-            if git diff --name-only HEAD^ HEAD | grep -q "backend1/"; then
-              echo 'export WORKFLOW_PATH="deploy"' >> $BASH_ENV
-            elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "backend1/"; then
-              echo 'export WORKFLOW_PATH="use-existing"' >> $BASH_ENV
-            else
-              echo 'export WORKFLOW_PATH="default-service"' >> $BASH_ENV
-            fi
 
+  load_workflow_paths:
+    description: "Loads the workflow paths"
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Load WORKFLOW_PATH Variables
+          command: |
+            . workflow_paths.env
+            # Now you can use the variables like $WORKFLOW_PATH_backend1
+            echo "Cat workflow_paths.env"
+            cat workflow_paths.env
 jobs:
+
+  determine_workflow_path:
+    docker:
+      - image: cimg/node:lts-browsers
+    steps:
+      - checkout
+      - run:
+          name: Determine workflow path for each backend
+          command: |
+            # List backends
+            BACKENDS="backend1 backend2"  
+
+            for BACKEND in $BACKENDS; do
+              if git diff --name-only HEAD^ HEAD | grep -q "$BACKEND/"; then
+                echo "export WORKFLOW_PATH_${BACKEND}=\"deploy\"" >> $BASH_ENV
+              elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "$BACKEND/"; then
+                echo "export WORKFLOW_PATH_${BACKEND}=\"use-existing\"" >> $BASH_ENV
+              else
+                echo "export WORKFLOW_PATH_${BACKEND}=\"default-service\"" >> $BASH_ENV
+              fi
+            done
+      - run:
+          name: Save WORKFLOW_PATH Variables
+          command: |
+            mkdir -p /tmp/workspace
+            env | grep WORKFLOW_PATH_ > workflow_paths.env
+      - persist_to_workspace:
+          root: .
+          paths:
+            - workflow_paths.env
+
   build-and-deploy-preview:
     docker:
       - image: pulumi/pulumi:latest
@@ -102,8 +132,7 @@ jobs:
             cat service_url.txt
             SERVICE_URL=$(cat service_url.txt)
             echo "URL IN TESTS = $SERVICE_URL"
-
-          
+   
   update-on-pr-merge:
     docker:
       - image: pulumi/pulumi:latest
@@ -168,8 +197,12 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
+      - determine_workflow_path:
+          <<: *pull_requests_only
       - build-and-deploy-preview:
           <<: *pull_requests_only
+          requires:
+            - determine_workflow_path
       - tests:
           <<: *pull_requests_only
           requires:
