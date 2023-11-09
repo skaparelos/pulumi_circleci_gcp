@@ -127,7 +127,7 @@ jobs:
       - load_workflow_paths
       - login
       - deploy_to_gcp:
-          param1: "backend1"
+          serviceName: "backend1"
       # - run:
       #     name: Deploy to GCP
       #     command: |
