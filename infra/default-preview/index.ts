@@ -2,13 +2,9 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as gcp from "@pulumi/gcp";
 
-const config = new pulumi.Config()
-const serviceName = config.require('serviceName')?.toLowerCase() ?? 'test'
-
 // Get the GCP project config
 const projectId = 'deleteme-403817'
 const location = 'us-central1'
-let customRuntimeEnvironmentName = `${serviceName}-image`
 
 // gets repository from 'shared' stack
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
@@ -16,7 +12,7 @@ const repositoryName = sharedStack.getOutput("repositoryName");
 
 const getImageName = (service: string) => pulumi.all([repositoryName, location, projectId])
   .apply(([repoName, repoLocation, projId]) =>
-   `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${service}-image:${branchName ? branchName : "latest"}`
+   `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${service}-image:default-preview`
   );
 
 const image1 = new docker.Image(`backend1-service-default-preview`, {
@@ -38,6 +34,7 @@ const image2 = new docker.Image(`backend2-service-default-preview`, {
 
 
 // Create a Cloud Run service that uses the Docker image
+
 const service1 = new gcp.cloudrunv2.Service(`backend1-service-default-preview`, {
   ingress: "INGRESS_TRAFFIC_ALL",
   location: "us-central1",
@@ -48,18 +45,19 @@ const service1 = new gcp.cloudrunv2.Service(`backend1-service-default-preview`, 
   },
 });
 
-const service1 = new gcp.cloudrunv2.Service(`backend2-service-default-preview`, {
+const service2 = new gcp.cloudrunv2.Service(`backend2-service-default-preview`, {
   ingress: "INGRESS_TRAFFIC_ALL",
   location: "us-central1",
   template: {
     containers: [{
-      image: image1.imageName,
+      image: image2.imageName,
     }],
   },
 });
 
 // Export the URL of the deployed service
-exports.url = service.uri
+exports.urlBackend1 = service1.uri
+exports.urlBackend2 = service2.uri
 
 
 

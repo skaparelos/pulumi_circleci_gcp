@@ -5,14 +5,14 @@ pull_requests_only: &pull_requests_only
     branches:
       ignore:
         - main
-        - develop 
+        - develop
 
 commands:
-  login: 
+  login:
     description: "Logs in GCP & Pulumi & Docker"
     steps:
       - run:
-          name: Login 
+          name: Login
           command: |
             echo "$GCP_SERVICE_ACCOUNT_KEY" > /tmp/gcp-service-account-key.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-service-account-key.json
@@ -22,7 +22,6 @@ commands:
 
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-
 
   load_workflow_paths:
     description: "Loads the workflow paths"
@@ -79,12 +78,6 @@ commands:
       - persist_to_workspace:
           root: .
           paths:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-            - service_url.txt
-=======
-=======
->>>>>>> 983e5d71bb4e480032eb05a9eff4b912a6b69c42
             - service_url.env
 
 jobs:
@@ -126,12 +119,6 @@ jobs:
       - load_workflow_paths
       - login
       - deploy_to_gcp
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-      # - deploy_to_gcp:
-      #     serviceName: "backend2"
->>>>>>> 983e5d71bb4e480032eb05a9eff4b912a6b69c42
 
   tests:
     docker:
@@ -149,7 +136,6 @@ jobs:
             echo "URL_BACKEND1=$URL_BACKEND1"
             echo "URL_BACKEND2=$URL_BACKEND2"
 
-   
   update-on-pr-merge:
     docker:
       - image: pulumi/pulumi:latest
@@ -161,27 +147,27 @@ jobs:
           name: Install Dependencies
           command: |
             npm install
-      - run: 
+      - run:
           name: Update default-preview on merge
           command: |
             # on merge, update default-preview with the merged
             cd infra/default-preview
             pulumi stack select --create default-preview
             pulumi up --yes --debug
-      - run: 
-          name: Destroy resources and delete stack for merged branch 
+      - run:
+          name: Destroy resources and delete stack for merged branch
           command: |
             # on merge, delete resources created for preview
 
             git fetch --all
-          
+
             # List branches merged into main
             MERGED_BRANCHES=$(git branch -r --merged origin/main | grep -v 'origin/main$' | sed 's/origin\///')
             echo MERGED_BRANCHES=
             echo $MERGED_BRANCHES
 
             cd infra/preview
-            
+
             # Loop over the list and perform cleanup. if they are merged they should be deleted
             for stack in $MERGED_BRANCHES; do
               echo "Trying stack=$stack"
@@ -225,6 +211,6 @@ workflows:
           requires:
             - build-and-deploy-preview
       - update-on-pr-merge:
-           filters:
+          filters:
             branches:
               only: main
