@@ -74,8 +74,8 @@ commands:
 
             cd ../../
 
-            echo "$URL_BACKEND1" >> service_url.txt
-            echo "$URL_BACKEND2" >> service_url.txt
+            echo "export URL_BACKEND1=$URL_BACKEND1" >> service_url.txt
+            echo "export URL_BACKEND2=$URL_BACKEND2" >> service_url.txt
       - persist_to_workspace:
           root: .
           paths:
@@ -134,8 +134,11 @@ jobs:
           command: |
             echo "cat service_url.txt"
             cat service_url.txt
-            # SERVICE_URL=$(cat service_url.txt)
-            # echo "URL IN TESTS = $SERVICE_URL"
+            cat workflow_paths.env >> $BASH_ENV
+            source $BASH_ENV
+            echo "URL_BACKEND1=$URL_BACKEND1"
+            echo "URL_BACKEND2=$URL_BACKEND2"
+
    
   update-on-pr-merge:
     docker:
