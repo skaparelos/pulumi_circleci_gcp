@@ -32,7 +32,7 @@ commands:
       - run:
           name: Load WORKFLOW_PATH Variables
           command: |
-            . workflow_paths.env
+            source workflow_paths.env
             # Now you can use the variables like $WORKFLOW_PATH_backend1
             echo "Cat workflow_paths.env"
             cat workflow_paths.env
@@ -111,11 +111,6 @@ jobs:
                 echo "export WORKFLOW_PATH_${BACKEND}=\"default-service\"" >> workflow_paths.env
               fi
             done
-      # - run:
-      #     name: Save WORKFLOW_PATH Variables
-      #     command: |
-      #       mkdir -p /tmp/workspace
-      #       env | grep WORKFLOW_PATH_ > workflow_paths.env
       - persist_to_workspace:
           root: .
           paths:
