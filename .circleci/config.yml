@@ -181,21 +181,33 @@ jobs:
               fi
             done
 
-            echo "deleted some"
-            stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)')
+            # Run pulumi command and capture output
+            pulumi_output=$(pulumi stack ls --json)
             if [ $? -ne 0 ]; then
                 echo "Error running 'pulumi stack ls --json'"
-                exit 0
+                exit 1  # Exit with an error status if pulumi command fails
             fi
-            echo "heree"
 
-            stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
-            if [ -z "$stacks" ]; then
-              echo "No matching stacks found."
-              exit 0
+            # Run grep command
+            filtered_stacks=$(echo "$pulumi_output" | grep -E '"name": "(pmbt-|pea-)')
+            grep_status=$?
+
+            # Check the status of grep
+            if [ $grep_status -ne 0 ]; then
+                if [ $grep_status -eq 1 ]; then
+                    # Grep did not find any matches, but not an error in this context
+                    echo "No matching stacks found."
+                    exit 0
+                else
+                    # Grep failed due to some other reason
+                    echo "Error filtering stacks"
+                    exit 1
+                fi
             fi
-            echo "stacks="
-            echo $stacks
+
+            # If grep was successful and found matches
+            echo "Found stacks:"
+            echo "$filtered_stacks"
 
             # Check if any stack is in the list of merged branches and delete it
             for stack in $stacks; do
