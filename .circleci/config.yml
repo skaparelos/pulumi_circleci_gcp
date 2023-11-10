@@ -181,6 +181,7 @@ jobs:
               fi
             done
 
+            echo "deleted some"
             # fetch list with pulumi stacks
             stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
             echo "stacks="
