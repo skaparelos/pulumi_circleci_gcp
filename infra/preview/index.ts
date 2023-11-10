@@ -31,10 +31,10 @@ const getImageName = (service) => {
 
 const imageBackend1 = new docker.Image(customRuntimeEnvironmentName, {
   build: {
-    context: `../../${getImageName("backend1")}/`,
+    context: `../../backend1/`,
     platform: 'linux/amd64',
   },
-  imageName: renderFaasDockerImageName,
+  imageName: getImageName("backend1"),
 });
 
 // Create a Cloud Run service that uses the Docker image
@@ -51,10 +51,10 @@ const service1 = new gcp.cloudrunv2.Service(`${serviceName}-service-${branchName
 
 const imageBackend2 = new docker.Image(customRuntimeEnvironmentName, {
   build: {
-    context: `../../${getImageName("backend2")}/`,
+    context: `../../backend2/`,
     platform: 'linux/amd64',
   },
-  imageName: renderFaasDockerImageName,
+  imageName: getImageName("backend2"),
 });
 
 const service2 = new gcp.cloudrunv2.Service(`${serviceName}-service-${branchName}-preview`, {
