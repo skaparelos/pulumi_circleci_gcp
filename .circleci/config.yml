@@ -189,7 +189,7 @@ jobs:
                 # If empty, it means no matching stacks were found
                 echo "No matching stacks found."
                 exit 0
-            else
+            fi
 
             # Check if any stack is in the list of merged branches and delete it
             for stack in $stacks; do
