@@ -20,6 +20,8 @@ const getImageName = (service: string) => {
   return `${location}-docker.pkg.dev/${projectId}/${repositoryName}/${service}-image:${branchName ? branchName : "latest"}`
 }
 
+console.log("imageName=",getImageName("backend2"))
+
 const imageBackend1 = new docker.Image("backend1-image", {
   build: {
     context: `../../backend/backend1/`,
