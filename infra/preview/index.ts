@@ -25,27 +25,51 @@ const renderFaasDockerImageName = pulumi.all([repositoryName, "us-central1", pro
     `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${customRuntimeEnvironmentName}:${branchName ? branch : "latest"}`
   );
 
-const image = new docker.Image(customRuntimeEnvironmentName, {
+const getImageName = (service) => {
+  return `${location}-docker.pkg.dev/${projectId}/${repositoryName}/${service}-image:${branchName ? branchName : "latest"}`
+}
+
+const imageBackend1 = new docker.Image(customRuntimeEnvironmentName, {
   build: {
-    context: `../../${serviceName}/`,
+    context: `../../${getImageName("backend1")}/`,
     platform: 'linux/amd64',
   },
   imageName: renderFaasDockerImageName,
 });
 
 // Create a Cloud Run service that uses the Docker image
-const service = new gcp.cloudrunv2.Service(`${serviceName}-service-${branchName}-preview`, {
+const service1 = new gcp.cloudrunv2.Service(`${serviceName}-service-${branchName}-preview`, {
   ingress: "INGRESS_TRAFFIC_ALL",
   location: "us-central1",
   template: {
     containers: [{
-      image: image.imageName,
+      image: imageBackend1.imageName,
+    }],
+  },
+});
+
+
+const imageBackend2 = new docker.Image(customRuntimeEnvironmentName, {
+  build: {
+    context: `../../${getImageName("backend2")}/`,
+    platform: 'linux/amd64',
+  },
+  imageName: renderFaasDockerImageName,
+});
+
+const service2 = new gcp.cloudrunv2.Service(`${serviceName}-service-${branchName}-preview`, {
+  ingress: "INGRESS_TRAFFIC_ALL",
+  location: "us-central1",
+  template: {
+    containers: [{
+      image: imageBackend2.imageName,
     }],
   },
 });
 
 // Export the URL of the deployed service
-exports.url = service.uri
+exports.urlBackend1 = service1.uri
+exports.urlBackend2 = service2.uri
 
 
 
