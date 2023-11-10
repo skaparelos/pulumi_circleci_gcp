@@ -5,8 +5,6 @@ import * as gcp from "@pulumi/gcp";
 // Get the GCP project config
 const projectId = 'deleteme-403817'
 const location = 'us-central1'
-const prefix = 'test'
-let customRuntimeEnvironmentName = `${prefix}-image`
 
 // gets repository from 'shared' stack
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");

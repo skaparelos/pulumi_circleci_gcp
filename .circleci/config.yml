@@ -79,12 +79,6 @@ commands:
       - persist_to_workspace:
           root: .
           paths:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-            - service_url.txt
-=======
-=======
->>>>>>> 983e5d71bb4e480032eb05a9eff4b912a6b69c42
             - service_url.env
 
 jobs:
@@ -126,12 +120,6 @@ jobs:
       - load_workflow_paths
       - login
       - deploy_to_gcp
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
-      # - deploy_to_gcp:
-      #     serviceName: "backend2"
->>>>>>> 983e5d71bb4e480032eb05a9eff4b912a6b69c42
 
   tests:
     docker:
