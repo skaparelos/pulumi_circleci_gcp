@@ -56,8 +56,8 @@ const service2 = new gcp.cloudrunv2.Service(`backend2-service-default-preview`, 
 });
 
 // Export the URL of the deployed service
-exports.url1 = service1.uri
-exports.url2 = service2.uri
+exports.urlBackend1 = service1.uri
+exports.urlBackend2 = service2.uri
 
 
 
