@@ -2,11 +2,13 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import * as gcp from "@pulumi/gcp";
 
+const config = new pulumi.Config()
+const serviceName = config.require('serviceName')?.toLowerCase() ?? 'test'
+
 // Get the GCP project config
 const projectId = 'deleteme-403817'
 const location = 'us-central1'
-const prefix = 'test'
-let customRuntimeEnvironmentName = `${prefix}-image`
+let customRuntimeEnvironmentName = `${serviceName}-image`
 
 // gets repository from 'shared' stack
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
