@@ -183,6 +183,12 @@ jobs:
 
             echo "deleted some"
             # fetch list with pulumi stacks
+            stacks=$(pulumi stack ls --json)
+            if [ $? -ne 0 ]; then
+                echo "Error running 'pulumi stack ls --json'"
+                exit 0
+            fi
+            
             stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)' | cut -d '"' -f 4)
             if [ -z "$stacks" ]; then
               echo "No matching stacks found."
