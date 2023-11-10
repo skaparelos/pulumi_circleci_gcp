@@ -182,6 +182,7 @@ jobs:
             done
 
             # Run pulumi command and capture output
+            echo "pulumi_output"
             pulumi_output=$(pulumi stack ls --json)
             if [ $? -ne 0 ]; then
                 echo "Error running 'pulumi stack ls --json'"
@@ -189,6 +190,7 @@ jobs:
             fi
 
             # Run grep command
+            echo "filtered_stacks"
             filtered_stacks=$(echo "$pulumi_output" | grep -E '"name": "(pmbt-|pea-)')
             grep_status=$?
 
