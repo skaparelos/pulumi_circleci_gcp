@@ -170,7 +170,7 @@ jobs:
 
             # Loop over the list and perform cleanup. if they are merged they should be deleted
             for stack in $MERGED_BRANCHES; do
-              echo "Trying stack=$stack"
+              echo "Trying stack =$stack"
               if pulumi stack ls | grep -q $stack; then
                   echo "Deleting stack: $stack"
                   pulumi stack select $stack
