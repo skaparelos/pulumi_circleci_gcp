@@ -36,19 +36,12 @@ commands:
             source $BASH_ENV
 
   deploy_to_gcp:
-    parameters:
-      serviceName:
-        type: string
     steps:
-      - run: echo "Parameter 1 is << parameters.serviceName >>"
       - run:
           name: Deploy to GCP
           command: |
-            export BACKEND="<< parameters.serviceName >>"
-            echo "heree deploying $BACKEND"
 
-            varName="WORKFLOW_PATH_$BACKEND"
-            echo "WORKFLOW_PATH_${BACKEND} = ${!varName}"
+            echo "WORKFLOW_PATH_BACKEND = $WORKFLOW_PATH_BACKEND"
 
             workflowPathValue=${!varName}
             cd infra/shared
@@ -59,19 +52,20 @@ commands:
             cd ../preview
             pulumi stack select --create ${CIRCLE_BRANCH}
 
-            if [ "$workflowPathValue" = "deploy" ]; then
+            if [ "$WORKFLOW_PATH_BACKEND" = "deploy" ]; then
               echo "creating preview...."
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
-              # pulumi config set serviceName << parameters.serviceName >>
               pulumi up --yes --debug
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"
-            elif [ "$workflowPathValue" = "use-existing" ]; then
+              
+            elif [ "$WORKFLOW_PATH_BACKEND" = "use-existing" ]; then
               echo "use-existing"
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"
-            elif [ "$workflowPathValue" = "default-service" ]; then
+
+            elif [ "$WORKFLOW_PATH_BACKEND" = "default-service" ]; then
               echo "default-service"
               cd ../default-preview
               URL=$(pulumi stack output url --stack default-preview)
@@ -96,16 +90,16 @@ jobs:
       - run:
           name: Determine workflow path for each backend
           command: |
-            # List backends
-            BACKENDS="backend1 backend2"  
+            # List services
+            SERVICES="backend frontend"  
 
-            for BACKEND in $BACKENDS; do
-              if git diff --name-only HEAD^ HEAD | grep -q "$BACKEND/"; then
-                echo "export WORKFLOW_PATH_${BACKEND}=\"deploy\"" >> workflow_paths.env
-              elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "$BACKEND/"; then
-                echo "export WORKFLOW_PATH_${BACKEND}=\"use-existing\"" >> workflow_paths.env
+            for SERVICE in $SERVICES; do
+              if git diff --name-only HEAD^ HEAD | grep -q "$SERVICE/"; then
+                echo "export WORKFLOW_PATH_${SERVICE}=\"deploy\"" >> workflow_paths.env
+              elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "$SERVICE/"; then
+                echo "export WORKFLOW_PATH_${SERVICE}=\"use-existing\"" >> workflow_paths.env
               else
-                echo "export WORKFLOW_PATH_${BACKEND}=\"default-service\"" >> workflow_paths.env
+                echo "export WORKFLOW_PATH_${SERVICE}=\"default-service\"" >> workflow_paths.env
               fi
             done
       - persist_to_workspace:
