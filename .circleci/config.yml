@@ -87,7 +87,51 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+<<<<<<< Updated upstream
             - service_url.txt
+=======
+            - service_url.env
+
+jobs:
+  determine_workflow_path:
+    docker:
+      - image: cimg/node:lts-browsers
+    steps:
+      - checkout
+      - run:
+          name: Determine workflow path for each backend
+          command: |
+            # List services
+            SERVICES="backend frontend"  
+
+            for SERVICE in $SERVICES; do
+              if git diff --name-only HEAD^ HEAD | grep -q "$SERVICE/"; then
+                echo "export WORKFLOW_PATH_${SERVICE}=\"deploy\"" >> workflow_paths.env
+              elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "$SERVICE/"; then
+                echo "export WORKFLOW_PATH_${SERVICE}=\"use-existing\"" >> workflow_paths.env
+              else
+                echo "export WORKFLOW_PATH_${SERVICE}=\"default-service\"" >> workflow_paths.env
+              fi
+            done
+      - persist_to_workspace:
+          root: .
+          paths:
+            - workflow_paths.env
+
+  build-and-deploy-preview:
+    docker:
+      - image: pulumi/pulumi:latest
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Dependencies
+          command: |
+            npm install
+      - load_workflow_paths
+      - login
+      - deploy_to_gcp
+>>>>>>> Stashed changes
 
   tests:
     docker:

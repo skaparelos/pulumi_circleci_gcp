@@ -12,26 +12,46 @@ let customRuntimeEnvironmentName = `${prefix}-image`
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
 const repositoryName = sharedStack.getOutput("repositoryName");
 
-const renderFaasDockerImageName = pulumi.all([repositoryName, "us-central1", projectId])
+const getImageName = (service: string) => pulumi.all([repositoryName, location, projectId])
   .apply(([repoName, repoLocation, projId]) =>
-    `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${customRuntimeEnvironmentName}:default-preview`
+   `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${service}-image:${branchName ? branchName : "latest"}`
   );
 
-const image = new docker.Image(customRuntimeEnvironmentName, {
+const image1 = new docker.Image(`backend1-service-default-preview`, {
   build: {
-    context: "../../backend1/",
+    context: `../../backend/backend1/`,
     platform: 'linux/amd64',
   },
-  imageName: renderFaasDockerImageName,
+  imageName: getImageName("backend1"),
 });
 
+
+const image2 = new docker.Image(`backend2-service-default-preview`, {
+  build: {
+    context: `../../backend/backend2/`,
+    platform: 'linux/amd64',
+  },
+  imageName: getImageName("backend2"),
+});
+
+
 // Create a Cloud Run service that uses the Docker image
-const service = new gcp.cloudrunv2.Service(`${prefix}-service-default-preview`, {
+const service1 = new gcp.cloudrunv2.Service(`backend1-service-default-preview`, {
   ingress: "INGRESS_TRAFFIC_ALL",
   location: "us-central1",
   template: {
     containers: [{
-      image: image.imageName,
+      image: image1.imageName,
+    }],
+  },
+});
+
+const service1 = new gcp.cloudrunv2.Service(`backend2-service-default-preview`, {
+  ingress: "INGRESS_TRAFFIC_ALL",
+  location: "us-central1",
+  template: {
+    containers: [{
+      image: image1.imageName,
     }],
   },
 });
