@@ -53,35 +53,29 @@ commands:
 
             if [ "$WORKFLOW_PATH_backend" = "deploy" ]; then
               echo "creating preview...."
-              # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
+
               pulumi config set branch ${CIRCLE_BRANCH}
               pulumi up --yes --debug
-              URL1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
-              URL2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
-              echo "URL1= $URL1"
-              echo "URL2= $URL2"
+              URL_BACKEND1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
+              URL_BACKEND2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
               
             elif [ "$WORKFLOW_PATH_backend" = "use-existing" ]; then
               echo "use-existing"
-              URL1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
-              URL2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
-              echo "URL1= $URL1"
-              echo "URL2= $URL2"
+              URL_BACKEND1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
+              URL_BACKEND2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
 
             elif [ "$WORKFLOW_PATH_backend" = "default-service" ]; then
               echo "default-service"
               cd ../default-preview
               # URL=$(pulumi stack output url --stack default-preview)
-              URL1=$(pulumi stack output urlBackend1 --stack default-preview)
-              URL2=$(pulumi stack output urlBackend2 --stack default-preview)
-              echo "URL1= $URL1"
-              echo "URL2= $URL2"
+              URL_BACKEND1=$(pulumi stack output urlBackend1 --stack default-preview)
+              URL_BACKEND2=$(pulumi stack output urlBackend2 --stack default-preview)
             fi
 
             cd ../../
 
-            export SERVICE_URL=$URL
-            echo "$SERVICE_URL" >> service_url.txt
+            echo "$URL_BACKEND1" >> service_url.txt
+            echo "$URL_BACKEND2" >> service_url.txt
       - persist_to_workspace:
           root: .
           paths:
@@ -140,8 +134,8 @@ jobs:
           command: |
             echo "cat service_url.txt"
             cat service_url.txt
-            SERVICE_URL=$(cat service_url.txt)
-            echo "URL IN TESTS = $SERVICE_URL"
+            # SERVICE_URL=$(cat service_url.txt)
+            # echo "URL IN TESTS = $SERVICE_URL"
    
   update-on-pr-merge:
     docker:
