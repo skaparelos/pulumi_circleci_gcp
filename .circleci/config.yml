@@ -48,7 +48,6 @@ commands:
             echo "heree deploying $BACKEND"
 
             varName="WORKFLOW_PATH_$BACKEND"
-            env | grep WORKFLOW
             echo "WORKFLOW_PATH_${BACKEND} = ${!varName}"
 
             workflowPathValue=${!varName}
