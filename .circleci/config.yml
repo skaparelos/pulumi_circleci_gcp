@@ -182,7 +182,7 @@ jobs:
             done
 
             echo "deleted some"
-            stacks=$(pulumi stack ls --json)
+            stacks=$(pulumi stack ls --json | grep -E '"name": "(pmbt-|pea-)')
             echo "trying command"
             if [ $? -ne 0 ]; then
                 echo "Error running 'pulumi stack ls --json'"
