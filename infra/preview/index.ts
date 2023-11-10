@@ -25,7 +25,7 @@ const renderFaasDockerImageName = pulumi.all([repositoryName, "us-central1", pro
     `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${customRuntimeEnvironmentName}:${branchName ? branch : "latest"}`
   );
 
-const getImageName = (service) => {
+const getImageName = (service: string) => {
   return `${location}-docker.pkg.dev/${projectId}/${repositoryName}/${service}-image:${branchName ? branchName : "latest"}`
 }
 
@@ -38,7 +38,7 @@ const imageBackend1 = new docker.Image(customRuntimeEnvironmentName, {
 });
 
 // Create a Cloud Run service that uses the Docker image
-const service1 = new gcp.cloudrunv2.Service(`${serviceName}-service-${branchName}-preview`, {
+const service1 = new gcp.cloudrunv2.Service(`backend1-service-${branchName}-preview`, {
   ingress: "INGRESS_TRAFFIC_ALL",
   location: "us-central1",
   template: {
@@ -57,7 +57,7 @@ const imageBackend2 = new docker.Image(customRuntimeEnvironmentName, {
   imageName: getImageName("backend2"),
 });
 
-const service2 = new gcp.cloudrunv2.Service(`${serviceName}-service-${branchName}-preview`, {
+const service2 = new gcp.cloudrunv2.Service(`backend2-service-${branchName}-preview`, {
   ingress: "INGRESS_TRAFFIC_ALL",
   location: "us-central1",
   template: {
