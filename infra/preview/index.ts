@@ -22,7 +22,7 @@ const getImageName = (service: string) => {
 
 const imageBackend1 = new docker.Image("backend1-image", {
   build: {
-    context: `../../backend1/`,
+    context: `../../backend/backend1/`,
     platform: 'linux/amd64',
   },
   imageName: getImageName("backend1"),
@@ -42,7 +42,7 @@ const service1 = new gcp.cloudrunv2.Service(`backend1-service-${branchName}-prev
 
 const imageBackend2 = new docker.Image("backend2-image", {
   build: {
-    context: `../../backend2/`,
+    context: `../../backend/backend2/`,
     platform: 'linux/amd64',
   },
   imageName: getImageName("backend2"),
