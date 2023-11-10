@@ -119,8 +119,7 @@ jobs:
             npm install
       - load_workflow_paths
       - login
-      - deploy_to_gcp:
-          serviceName: "backend1"
+      - deploy_to_gcp
       # - deploy_to_gcp:
       #     serviceName: "backend2"
 
