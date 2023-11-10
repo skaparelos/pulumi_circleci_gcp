@@ -43,7 +43,6 @@ commands:
 
             echo "WORKFLOW_PATH_BACKEND = $WORKFLOW_PATH_BACKEND"
 
-            workflowPathValue=${!varName}
             cd infra/shared
 
             pulumi stack select --create shared
