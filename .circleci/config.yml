@@ -44,7 +44,7 @@ commands:
       - run:
           name: Deploy to GCP
           command: |
-            BACKEND="<< parameters.serviceName >>"
+            export BACKEND="<< parameters.serviceName >>"
             echo "heree deploying $BACKEND"
 
             varName="WORKFLOW_PATH_$BACKEND"
@@ -63,7 +63,7 @@ commands:
               echo "creating preview...."
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
-              pulumi config set serviceName << parameters.serviceName >>
+              # pulumi config set serviceName << parameters.serviceName >>
               pulumi up --yes --debug
               URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
               echo "URL= $URL"

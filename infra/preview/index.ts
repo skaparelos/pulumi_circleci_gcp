@@ -8,7 +8,7 @@ const projectId = 'deleteme-403817'
 const location = 'us-central1'
 
 const config = new pulumi.Config()
-const serviceName = config.require('serviceName')?.toLowerCase() ?? 'test'
+const serviceName = process.env.BACKEND ?? 'test'
 const branchName = config.require('branch')?.toLowerCase()
 console.log("branch name=", branchName)
 console.log("serviceName=", serviceName)
