@@ -5,7 +5,7 @@ pull_requests_only: &pull_requests_only
     branches:
       ignore:
         - main
-        - develop
+        - develop 
 
 commands:
   login: 
@@ -23,21 +23,90 @@ commands:
             # docker login is needed by Pulumi up when doing new docker.Image()
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
-  determine_workflow_path:
-    description: "Determine the workflow path based on git diffs"
+
+  load_workflow_paths:
+    description: "Loads the workflow paths"
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Load WORKFLOW_PATH Variables
+          command: |
+            cat workflow_paths.env >> $BASH_ENV
+            source $BASH_ENV
+
+  deploy_to_gcp:
     steps:
       - run:
-          name: Determine workflow path
+          name: Deploy to GCP
           command: |
-            if git diff --name-only HEAD^ HEAD | grep -q "backend1/"; then
-              echo 'export WORKFLOW_PATH="deploy"' >> $BASH_ENV
-            elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "backend1/"; then
-              echo 'export WORKFLOW_PATH="use-existing"' >> $BASH_ENV
-            else
-              echo 'export WORKFLOW_PATH="default-service"' >> $BASH_ENV
+
+            echo "WORKFLOW_PATH_backend = $WORKFLOW_PATH_backend"
+
+            cd infra/shared
+
+            pulumi stack select --create shared
+            pulumi up --yes
+
+            cd ../preview
+            pulumi stack select --create ${CIRCLE_BRANCH}
+
+            if [ "$WORKFLOW_PATH_backend" = "deploy" ]; then
+              echo "creating preview...."
+
+              pulumi config set branch ${CIRCLE_BRANCH}
+              pulumi up --yes --debug
+              URL_BACKEND1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
+              URL_BACKEND2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
+              
+            elif [ "$WORKFLOW_PATH_backend" = "use-existing" ]; then
+              echo "use-existing"
+              URL_BACKEND1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
+              URL_BACKEND2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
+
+            elif [ "$WORKFLOW_PATH_backend" = "default-service" ]; then
+              echo "default-service"
+              cd ../default-preview
+              # URL=$(pulumi stack output url --stack default-preview)
+              URL_BACKEND1=$(pulumi stack output urlBackend1 --stack default-preview)
+              URL_BACKEND2=$(pulumi stack output urlBackend2 --stack default-preview)
             fi
 
+            cd ../../
+
+            echo "export URL_BACKEND1=$URL_BACKEND1" >> service_url.env
+            echo "export URL_BACKEND2=$URL_BACKEND2" >> service_url.env
+      - persist_to_workspace:
+          root: .
+          paths:
+            - service_url.env
+
 jobs:
+  determine_workflow_path:
+    docker:
+      - image: cimg/node:lts-browsers
+    steps:
+      - checkout
+      - run:
+          name: Determine workflow path for each backend
+          command: |
+            # List services
+            SERVICES="backend frontend"  
+
+            for SERVICE in $SERVICES; do
+              if git diff --name-only HEAD^ HEAD | grep -q "$SERVICE/"; then
+                echo "export WORKFLOW_PATH_${SERVICE}=\"deploy\"" >> workflow_paths.env
+              elif git diff --name-only origin/main...$CIRCLE_BRANCH | grep -q "$SERVICE/"; then
+                echo "export WORKFLOW_PATH_${SERVICE}=\"use-existing\"" >> workflow_paths.env
+              else
+                echo "export WORKFLOW_PATH_${SERVICE}=\"default-service\"" >> workflow_paths.env
+              fi
+            done
+      - persist_to_workspace:
+          root: .
+          paths:
+            - workflow_paths.env
+
   build-and-deploy-preview:
     docker:
       - image: pulumi/pulumi:latest
@@ -48,46 +117,11 @@ jobs:
           name: Install Dependencies
           command: |
             npm install
-      - determine_workflow_path
+      - load_workflow_paths
       - login
-      - run:
-          name: Deploy to GCP
-          command: |
-
-            cd infra/shared
-
-            pulumi stack select --create shared
-            pulumi up --yes
-
-            cd ../preview
-            pulumi stack select --create ${CIRCLE_BRANCH}
-
-            if [ "$WORKFLOW_PATH" = "deploy" ]; then
-              echo "creating preview...."
-              # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
-              pulumi config set branch ${CIRCLE_BRANCH}
-              pulumi up --yes --debug
-              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-              echo "URL= $URL"
-            elif [ "$WORKFLOW_PATH" = "use-existing" ]; then
-              echo "use-existing"
-              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-              echo "URL= $URL"
-            elif [ "$WORKFLOW_PATH" = "default-service" ]; then
-              echo "default-service"
-              cd ../default-preview
-              URL=$(pulumi stack output url --stack default-preview)
-              echo "URL= $URL"
-            fi
-
-            cd ../../
-
-            export SERVICE_URL=$URL
-            echo "$SERVICE_URL" > service_url.txt
-      - persist_to_workspace:
-          root: .
-          paths:
-            - service_url.txt
+      - deploy_to_gcp
+      # - deploy_to_gcp:
+      #     serviceName: "backend2"
 
   tests:
     docker:
@@ -98,12 +132,14 @@ jobs:
       - run:
           name: Run tests
           command: |
-            echo "cat service_url.txt"
-            cat service_url.txt
-            SERVICE_URL=$(cat service_url.txt)
-            echo "URL IN TESTS = $SERVICE_URL"
+            echo "cat service_url.env"
+            cat service_url.env
+            cat service_url.env >> $BASH_ENV
+            source $BASH_ENV
+            echo "URL_BACKEND1=$URL_BACKEND1"
+            echo "URL_BACKEND2=$URL_BACKEND2"
 
-          
+   
   update-on-pr-merge:
     docker:
       - image: pulumi/pulumi:latest
@@ -168,8 +204,12 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
+      - determine_workflow_path:
+          <<: *pull_requests_only
       - build-and-deploy-preview:
           <<: *pull_requests_only
+          requires:
+            - determine_workflow_path
       - tests:
           <<: *pull_requests_only
           requires:
