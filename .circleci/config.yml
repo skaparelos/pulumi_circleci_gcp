@@ -32,10 +32,8 @@ commands:
       - run:
           name: Load WORKFLOW_PATH Variables
           command: |
-            source workflow_paths.env
-            # Now you can use the variables like $WORKFLOW_PATH_backend1
-            echo "Cat workflow_paths.env"
-            cat workflow_paths.env
+            cat workflow_paths.env >> $BASH_ENV
+            source $BASH_ENV
 
   deploy_to_gcp:
     parameters:
