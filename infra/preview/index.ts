@@ -16,9 +16,14 @@ const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
 const repositoryName = sharedStack.getOutput("repositoryName");
 
 
-const getImageName = (service: string) => {
-  return `${location}-docker.pkg.dev/${projectId}/${repositoryName}/${service}-image:${branchName ? branchName : "latest"}`
-}
+// const getImageName = (service: string) => {
+//   return `${location}-docker.pkg.dev/${projectId}/${repositoryName}/${service}-image:${branchName ? branchName : "latest"}`
+// }
+
+const getImageName = (service: string) => pulumi.all([repositoryName, location, projectId])
+  .apply(([repoName, repoLocation, projId]) =>
+   `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${service}-image:${branchName ? branchName : "latest"}`
+  );
 
 console.log("imageName=",getImageName("backend2"))
 
