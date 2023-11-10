@@ -56,19 +56,26 @@ commands:
               # pulumi config set pulumi-tests:branch ${CIRCLE_BRANCH}
               pulumi config set branch ${CIRCLE_BRANCH}
               pulumi up --yes --debug
-              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-              echo "URL= $URL"
+              URL1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
+              URL2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
+              echo "URL1= $URL1"
+              echo "URL2= $URL2"
               
             elif [ "$WORKFLOW_PATH_backend" = "use-existing" ]; then
               echo "use-existing"
-              URL=$(pulumi stack output url --stack ${CIRCLE_BRANCH})
-              echo "URL= $URL"
+              URL1=$(pulumi stack output urlBackend1 --stack ${CIRCLE_BRANCH})
+              URL2=$(pulumi stack output urlBackend2 --stack ${CIRCLE_BRANCH})
+              echo "URL1= $URL1"
+              echo "URL2= $URL2"
 
             elif [ "$WORKFLOW_PATH_backend" = "default-service" ]; then
               echo "default-service"
               cd ../default-preview
-              URL=$(pulumi stack output url --stack default-preview)
-              echo "URL= $URL"
+              # URL=$(pulumi stack output url --stack default-preview)
+              URL1=$(pulumi stack output urlBackend1 --stack default-preview)
+              URL2=$(pulumi stack output urlBackend2 --stack default-preview)
+              echo "URL1= $URL1"
+              echo "URL2= $URL2"
             fi
 
             cd ../../
