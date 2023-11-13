@@ -8,16 +8,18 @@ const location = 'us-central1'
 
 const config = new pulumi.Config()
 const branchName = config.require('branch')?.toLowerCase()
-console.log("branch name=", branchName)
+const isProduction = process.env.IS_PRODUCTION || false
+const semanticVersion = process.env.SEMANTIC_VERSION || '0.0.1'
 
 // gets repository from 'shared' stack
 const sharedStack = new pulumi.StackReference("skaparelos/pulumi-tests/shared");
 const repositoryName = sharedStack.getOutput("repositoryName");
 
 const getImageName = (service: string) => pulumi.all([repositoryName, location, projectId])
-  .apply(([repoName, repoLocation, projId]) =>
-   `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${service}-image:${branchName ? branchName : "latest"}`
-  );
+  .apply(([repoName, repoLocation, projId]) => {
+    const tag = isProduction ? semanticVersion : (branchName ? branchName : "latest")
+    return `${repoLocation}-docker.pkg.dev/${projId}/${repoName}/${service}-image:${tag}`
+  });
 
 const imageBackend1 = new docker.Image("backend1-image", {
   build: {
