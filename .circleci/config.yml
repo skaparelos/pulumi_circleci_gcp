@@ -24,7 +24,7 @@ commands:
             cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
   load_workflow_paths:
-    description: "Loads the workflow paths"
+    description: "Loads the workflow paths to the current workspace"
     steps:
       - attach_workspace:
           at: .
@@ -42,11 +42,12 @@ commands:
 
             echo "WORKFLOW_PATH_backend = $WORKFLOW_PATH_backend"
 
+            # create shared stack if it doesn't exist
             cd infra/shared
-
             pulumi stack select --create shared
             pulumi up --yes
 
+            # use preview script to create a stack based on the branch name
             cd ../preview
             pulumi stack select --create ${CIRCLE_BRANCH}
 
@@ -112,10 +113,10 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: Install Dependencies
-          command: |
-            npm install
+      # - run:
+      #     name: Install Dependencies
+      #     command: |
+      #       npm install
       - load_workflow_paths
       - login
       - deploy_to_gcp
